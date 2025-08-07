@@ -138,60 +138,6 @@
 - **Node.js 18+** y **NPM**
 - **MySQL/MariaDB 10.6+**
 
-### Pasos de Instalación
-
-1. **Clonar el repositorio**
-   ```bash
-   git clone [URL_DEL_REPOSITORIO]
-   cd DentalSync
-   ```
-
-2. **Instalar dependencias PHP**
-   ```bash
-   composer install
-   ```
-
-3. **Instalar dependencias JavaScript**
-   ```bash
-   npm install
-   ```
-
-4. **Configurar variables de entorno**
-   ```bash
-   cp .env.example .env
-   php artisan key:generate
-   ```
-
-5. **Configurar base de datos**
-   - Editar `.env` con credenciales de base de datos
-   - Ejecutar migraciones:
-   ```bash
-   php artisan migrate
-   ```
-
-6. **Cargar datos de prueba**
-   ```bash
-   php artisan db:seed
-   ```
-
-7. **Configurar storage**
-   ```bash
-   php artisan storage:link
-   ```
-
-8. **Compilar assets**
-   ```bash
-   npm run build
-   ```
-
-9. **Iniciar servidor de desarrollo**
-   ```bash
-   php artisan serve
-   npm run dev
-   ```
-
----
-
 ## 📋 Plan de Desarrollo
 
 ### Fase 1: Configuración Inicial
@@ -225,5 +171,3 @@ Bachillerato Tecnológico - Informática
 Año: 2025
 
 ---
-
-*Proyecto desarrollado con ❤️ por el equipo NullDevs como proyecto de egreso de 3ro de Bachillerato*
