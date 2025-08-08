@@ -64,7 +64,7 @@
 
 ### 📅 Sistema de Citas
 - **Calendario interactivo** para programar citas
-- **Estados de citas** (confirmada, pendiente, completada, cancelada)
+- **Estados de citas** (confirmada, pendiente, atendida, cancelada)
 - **Notificaciones** automáticas de recordatorios
 - **Gestión de horarios** disponibles
 - **Integración** con sistema de pacientes
@@ -74,7 +74,6 @@
 - **Historial clínico** por paciente
 - **Observaciones** y seguimiento médico
 - **Planificación** de tratamientos futuros
-- **Integración** con sistema de pagos
 
 ### 🦷 Gestión de Placas Dentales
 - **Subida de placas** y radiografías
@@ -82,7 +81,6 @@
 - **5 tipos de placas**: Panorámica, Periapical, Bitewing, Lateral, Oclusal
 - **Almacenamiento seguro** con identificadores únicos
 - **Asociación automática** con pacientes
-- **Visualización** integrada en el historial
 
 ### 💰 Sistema de Pagos
 - **3 modalidades de pago**:
