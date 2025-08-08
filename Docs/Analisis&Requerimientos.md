@@ -107,7 +107,7 @@ Desarrollar una aplicación web integral que permita a un consultorio odontológ
 | **Tratamientos** | ✅ | ✅ | ✅ | ✅ | Control total clínico |
 | **Historial Clínico** | ✅ | ✅ | ✅ | ❌ | Registro médico completo |
 | **Placas Dentales** | ✅ | ✅ | ✅ | ✅ | Gestión de archivos médicos |
-| **Pagos** | ❌ | ✅ | ❌ | ❌ | Solo consulta de estados |
+| **Pagos** | ✅ | ✅ | ✅ | ✅ | Control financiero completo |
 | **WhatsApp** | ✅ | ✅ | ✅ | ❌ | Comunicación con pacientes |
 | **Usuarios** | ❌ | ❌ | ❌ | ❌ | Sin acceso administrativo |
 
