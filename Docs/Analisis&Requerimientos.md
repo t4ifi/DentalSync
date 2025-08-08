@@ -109,7 +109,7 @@ Desarrollar una aplicación web integral que permita a un consultorio odontológ
 | **Placas Dentales** | ✅ | ✅ | ✅ | ✅ | Gestión de archivos médicos |
 | **Pagos** | ✅ | ✅ | ✅ | ✅ | Control financiero completo |
 | **WhatsApp** | ✅ | ✅ | ✅ | ❌ | Comunicación con pacientes |
-| **Usuarios** | ❌ | ❌ | ❌ | ❌ | Sin acceso administrativo |
+| **WhatsApp** | ✅ | ✅ | ✅ | ✅ | Control total de los usuarios. |
 
 ### **📋 Recepcionista - Permisos Administrativos**
 
