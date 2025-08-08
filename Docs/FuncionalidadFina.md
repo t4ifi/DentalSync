@@ -23,7 +23,7 @@
 **DentalSync** será un sistema web integral diseñado para automatizar y optimizar la gestión completa de consultorios odontológicos. El software abarcará desde la programación de citas hasta la gestión de pagos, historiales clínicos y comunicación con pacientes, proporcionando una solución 360° para profesionales de la odontología.
 
 ### Objetivo Principal
-El equipo NullDevs desarrollará una solución que digitalizará y centralizará todas las operaciones de un consultorio dental, con el objetivo de mejorar la eficiencia operativa, reducir errores manuales y optimizar la experiencia tanto para profesionales como para pacientes.
+NullDevs desarrollará una solución que digitalizará y centralizará todas las operaciones de un consultorio dental, con el objetivo de mejorar la eficiencia operativa, reducir errores manuales y optimizar la experiencia tanto para profesionales como para pacientes.
 
 ### Stack Tecnológico Seleccionado
 - **Backend:** Laravel 12 (PHP 8.4+)
