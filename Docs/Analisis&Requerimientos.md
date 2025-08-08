@@ -60,28 +60,24 @@ Desarrollar una aplicación web integral que permita a un consultorio odontológ
 - Estados detallados: pendiente, confirmada, atendida, cancelada
 - Notificaciones automáticas de recordatorios
 - Gestión de horarios disponibles
-- Reprogramación flexible de citas
 
 ### **🩺 Gestión Clínica Completa**
 - Registro detallado de tratamientos realizados
 - Historial clínico por paciente
 - Observaciones y seguimiento médico
 - Planificación de tratamientos futuros
-- Integración con sistema de pagos
 
 ### **🦷 Sistema de Placas Dentales**
 - Subida de placas y radiografías
 - Soporte múltiples formatos: JPG, JPEG, PNG, PDF
 - Clasificación por tipos: Panorámica, Periapical, Bitewing, Lateral, Oclusal
 - Almacenamiento seguro con identificadores únicos
-- Visualización integrada en historial clínico
 
 ### **💰 Sistema Financiero Avanzado**
 - **Tres modalidades de pago:**
   - Pago único completo
   - Cuotas fijas con montos iguales
   - Cuotas variables flexibles
-- Dashboard financiero con métricas en tiempo real
 - Gestión de cuotas pendientes y vencidas
 - Historial completo de pagos por paciente
 - Reportes financieros detallados
@@ -97,8 +93,6 @@ Desarrollar una aplicación web integral que permita a un consultorio odontológ
 - Gestión completa de usuarios del sistema
 - Control granular de permisos por rol
 - Estados de usuario (activo/inactivo)
-- Encriptación de contraseñas
-- Auditoría de actividades
 
 ---
 
