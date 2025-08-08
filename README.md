@@ -137,11 +137,3 @@
 - **MySQL/MariaDB 10.6+**
 
 ---
-
-## 📞 Contacto
-
-**Equipo NullDevs**  
-Bachillerato Tecnológico - Informática  
-Año: 2025
-
----
