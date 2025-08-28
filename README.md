@@ -4,7 +4,7 @@
 
 ### 📋 Descripción
 
-**DentalSync** es un sistema integral de gestión para consultorios dentales que será desarrollado como proyecto de egreso de 3ro de bachillerato por el equipo **NullDevs**. El sistema se construirá con **Laravel 12** y **Vue.js 3**, y permitirá a los dentistas gestionar pacientes, citas, tratamientos y más, con una interfaz moderna y funcional.
+**DentalSync** es un sistema integral de gestión para consultorios dentales que será desarrollado como proyecto de egreso de 3ro de bachillerato por nuestro equipo **NullDevs**. El sistema se construirá con **Laravel 12** y **Vue.js 3**, y permitirá a los dentistas gestionar pacientes, citas, tratamientos y más, con una interfaz moderna y funcional.
 
 ---
 
