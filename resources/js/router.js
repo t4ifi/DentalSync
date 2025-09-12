@@ -1,0 +1,12 @@
+import { createRouter, createWebHistory } from 'vue-router';
+import Login from './components/Login.vue';
+import Dashboard from './components/Dashboard.vue';
+import Citas from './components/dashboard/Citas.vue';
+import AgendarCita from './components/dashboard/AgendarCita.vue';
+import PacienteVer from './components/dashboard/PacienteVer.vue';
+import PacienteCrear from './components/dashboard/PacienteCrear.vue';
+import PacienteEditar from './components/dashboard/PacienteEditar.vue';
+import PlacaSubir from './components/dashboard/PlacaSubir.vue';
+import PlacaVer from './components/dashboard/PlacaVer.vue';
+import PlacaEliminar from './components/dashboard/PlacaEliminar.vue';
+import GestionPagos from './components/dashboard/GestionPagos.vue';
