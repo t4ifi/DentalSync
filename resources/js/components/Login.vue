@@ -63,9 +63,8 @@
 
 <script>
 import axios from 'axios';
-import Dashboard from './Dashboard.vue';
+
 export default {
-  components: { Dashboard },
   data() {
     return {
       usuario: '',
@@ -110,12 +109,8 @@ export default {
           this.loggedIn = true;
           this.loggingIn = false;
           
-          // Redirección inmediata al dashboard correspondiente
-          if (this.usuarioGuardado.rol === 'dentista') {
-            this.$router.push('/panel-dentista');
-          } else {
-            this.$router.push('/panel-recepcionista');
-          }
+          // Por ahora solo mostrar éxito, sin redirección
+          console.log('Login exitoso:', this.usuarioGuardado);
         }, 400); // Solo 0.4 segundos para que sea más fluido
         
       } catch (err) {
