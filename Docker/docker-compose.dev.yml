@@ -1,0 +1,148 @@
+# ============================================================================
+# DENTALSYNC - DOCKER COMPOSE PARA DESARROLLO
+# Configuración completa para entorno de desarrollo
+# ============================================================================
+
+version: '3.8'
+
+# ============================================================================
+# SERVICIOS
+# ============================================================================
+
+services:
+  # --------------------------------------------------------------------------
+  # APLICACIÓN PRINCIPAL (PHP + Node.js)
+  # --------------------------------------------------------------------------
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    container_name: dentalsync-dev
+    restart: unless-stopped
+    working_dir: /workspace
+    volumes:
+      # Montar el código fuente (bind mount para desarrollo)
+      - ../:/workspace:cached
+      # Volumen para caché de Composer
+      - composer_cache:/home/developer/.composer/cache
+      # Volumen para caché de npm
+      - npm_cache:/home/developer/.npm
+      # Persistir el historial de bash
+      - bash_history:/home/developer/.bash_history
+    ports:
+      # Laravel development server
+      - "8000:8000"
+      # Vite development server
+      - "5173:5173"
+      # Vite HMR
+      - "24678:24678"
+    environment:
+      # Variables de entorno para desarrollo
+      - APP_ENV=local
+      - APP_DEBUG=true
+      - DB_CONNECTION=sqlite
+      - DB_DATABASE=/workspace/database/database.sqlite
+      - VITE_DEV_SERVER_URL=http://localhost:5173
+    networks:
+      - dentalsync-network
+    depends_on:
+      - database
+      - redis
+    # Comando para mantener el contenedor activo
+    command: tail -f /dev/null
+
+  # --------------------------------------------------------------------------
+  # BASE DE DATOS MARIADB (PARA DESARROLLO Y PRODUCCIÓN)
+  # --------------------------------------------------------------------------
+  database:
+    image: mariadb:11.2
+    container_name: dentalsync-mariadb
+    restart: unless-stopped
+    environment:
+      MARIADB_ROOT_PASSWORD: rootpassword
+      MARIADB_DATABASE: dentalsync
+      MARIADB_USER: dentalsync
+      MARIADB_PASSWORD: password
+      MARIADB_CHARACTER_SET_SERVER: utf8mb4
+      MARIADB_COLLATE_SERVER: utf8mb4_unicode_ci
+    volumes:
+      # Persistir datos de MariaDB
+      - mariadb_data:/var/lib/mysql
+      # Configuración personalizada de MariaDB
+      - ./mariadb/mariadb.cnf:/etc/mysql/conf.d/custom.cnf
+    ports:
+      - "3306:3306"
+    networks:
+      - dentalsync-network
+    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+
+  # --------------------------------------------------------------------------
+  # REDIS (CACHE Y SESIONES)
+  # --------------------------------------------------------------------------
+  redis:
+    image: redis:7-alpine
+    container_name: dentalsync-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - dentalsync-network
+    command: redis-server --appendonly yes
+
+
+
+  # --------------------------------------------------------------------------
+  # MAILPIT (SERVIDOR DE CORREO PARA DESARROLLO)
+  # --------------------------------------------------------------------------
+  mailpit:
+    image: axllent/mailpit:latest
+    container_name: dentalsync-mailpit
+    restart: unless-stopped
+    ports:
+      # SMTP server
+      - "1025:1025"
+      # Web interface
+      - "8025:8025"
+    networks:
+      - dentalsync-network
+
+# ============================================================================
+# VOLÚMENES PERSISTENTES
+# ============================================================================
+
+volumes:
+  # Datos de MariaDB
+  mariadb_data:
+    driver: local
+    name: dentalsync_mariadb_data
+
+  # Datos de Redis
+  redis_data:
+    driver: local
+    name: dentalsync_redis_data
+
+  # Caché de Composer
+  composer_cache:
+    driver: local
+    name: dentalsync_composer_cache
+
+  # Caché de npm
+  npm_cache:
+    driver: local
+    name: dentalsync_npm_cache
+
+  # Historial de bash
+  bash_history:
+    driver: local
+    name: dentalsync_bash_history
+
+# ============================================================================
+# REDES
+# ============================================================================
+
+networks:
+  dentalsync-network:
+    driver: bridge
+    name: dentalsync_network

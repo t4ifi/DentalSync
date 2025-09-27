@@ -1,0 +1,232 @@
+# ============================================================================
+# DENTALSYNC - DESARROLLO CONTAINER
+# Imagen optimizada para desarrollo con PHP 8.2, Node.js, y herramientas
+# ============================================================================
+
+FROM php:8.2-fpm
+
+# Información del mantenedor
+LABEL maintainer="DentalSync Team <dev@dentalsync.com>"
+LABEL version="1.0"
+LABEL description="Entorno de desarrollo completo para DentalSync"
+
+# Variables de entorno para desarrollo
+ENV DEBIAN_FRONTEND=noninteractive
+ENV TZ=America/Mexico_City
+ENV COMPOSER_ALLOW_SUPERUSER=1
+ENV NODE_VERSION=20
+
+# Actualizar sistema base
+RUN apt-get update && apt-get upgrade -y
+
+# ============================================================================
+# INSTALACIÓN DE DEPENDENCIAS DEL SISTEMA
+# ============================================================================
+
+# Instalar dependencias base de PHP y herramientas del sistema
+RUN apt-get install -y \
+    # Herramientas básicas
+    curl \
+    wget \
+    git \
+    unzip \
+    zip \
+    vim \
+    nano \
+    htop \
+    tree \
+    # Dependencias de PHP
+    libpng-dev \
+    libjpeg-dev \
+    libfreetype6-dev \
+    libzip-dev \
+    libonig-dev \
+    libxml2-dev \
+    libpq-dev \
+    libsqlite3-dev \
+    # Para compilar extensiones
+    build-essential \
+    # Herramientas de red
+    iputils-ping \
+    telnet \
+    # Cliente MariaDB
+    mariadb-client \
+    # Herramientas adicionales
+    bash-completion \
+    && rm -rf /var/lib/apt/lists/*
+
+# ============================================================================
+# CONFIGURACIÓN DE PHP
+# ============================================================================
+
+# Instalar extensiones de PHP necesarias para Laravel
+RUN docker-php-ext-configure gd --with-freetype --with-jpeg
+RUN docker-php-ext-install -j$(nproc) \
+    pdo_mysql \
+    pdo_sqlite \
+    mysqli \
+    mbstring \
+    zip \
+    exif \
+    pcntl \
+    gd \
+    xml \
+    curl \
+    fileinfo \
+    json \
+    tokenizer
+
+# Configurar PHP para desarrollo
+RUN cp /usr/local/etc/php/php.ini-development /usr/local/etc/php/php.ini
+
+# Configuraciones personalizadas de PHP
+RUN echo "memory_limit = 512M" >> /usr/local/etc/php/php.ini && \
+    echo "upload_max_filesize = 64M" >> /usr/local/etc/php/php.ini && \
+    echo "post_max_size = 64M" >> /usr/local/etc/php/php.ini && \
+    echo "max_execution_time = 300" >> /usr/local/etc/php/php.ini && \
+    echo "display_errors = On" >> /usr/local/etc/php/php.ini && \
+    echo "log_errors = On" >> /usr/local/etc/php/php.ini
+
+# ============================================================================
+# INSTALACIÓN DE COMPOSER
+# ============================================================================
+
+# Instalar Composer (gestor de paquetes de PHP)
+COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
+
+# Verificar instalación de Composer
+RUN composer --version
+
+# ============================================================================
+# INSTALACIÓN DE NODE.JS Y NPM
+# ============================================================================
+
+# Instalar Node.js 20 LTS
+RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - && \
+    apt-get install -y nodejs
+
+# Actualizar npm a la última versión
+RUN npm install -g npm@latest
+
+# Instalar herramientas globales de Node.js
+RUN npm install -g \
+    @vue/cli \
+    vite \
+    nodemon \
+    pm2 \
+    yarn
+
+# Verificar instalaciones
+RUN node --version && npm --version
+
+# ============================================================================
+# CONFIGURACIÓN DE USUARIO DE DESARROLLO
+# ============================================================================
+
+# Crear usuario para desarrollo (evitar usar root)
+RUN groupadd -g 1000 developer && \
+    useradd -u 1000 -g developer -m -s /bin/bash developer
+
+# Configurar sudo para el usuario developer
+RUN apt-get update && apt-get install -y sudo && \
+    echo "developer ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
+
+# ============================================================================
+# CONFIGURACIÓN DEL WORKSPACE
+# ============================================================================
+
+# Establecer directorio de trabajo
+WORKDIR /workspace
+
+# Cambiar propietario del workspace
+RUN chown -R developer:developer /workspace
+
+# Cambiar al usuario de desarrollo
+USER developer
+
+# ============================================================================
+# CONFIGURACIÓN DE GIT PARA EL CONTENEDOR
+# ============================================================================
+
+# Configuración básica de Git (se puede sobrescribir desde fuera)
+RUN git config --global user.name "DentalSync Dev" && \
+    git config --global user.email "dev@dentalsync.local" && \
+    git config --global init.defaultBranch main
+
+# ============================================================================
+# CONFIGURACIÓN DE BASH
+# ============================================================================
+
+# Crear archivo .bashrc personalizado para desarrollo
+RUN echo '# DentalSync Development Environment' >> ~/.bashrc && \
+    echo 'export PS1="\[\033[01;32m\]\u@dentalsync-dev\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ "' >> ~/.bashrc && \
+    echo 'alias ll="ls -alF"' >> ~/.bashrc && \
+    echo 'alias la="ls -A"' >> ~/.bashrc && \
+    echo 'alias l="ls -CF"' >> ~/.bashrc && \
+    echo 'alias ..="cd .."' >> ~/.bashrc && \
+    echo 'alias ...="cd ../.."' >> ~/.bashrc && \
+    echo 'alias serve="php artisan serve --host=0.0.0.0 --port=8000"' >> ~/.bashrc && \
+    echo 'alias tinker="php artisan tinker"' >> ~/.bashrc && \
+    echo 'alias migrate="php artisan migrate"' >> ~/.bashrc && \
+    echo 'alias fresh="php artisan migrate:fresh --seed"' >> ~/.bashrc && \
+    echo 'alias test="php artisan test"' >> ~/.bashrc && \
+    echo 'alias dev="npm run dev"' >> ~/.bashrc && \
+    echo 'alias build="npm run build"' >> ~/.bashrc && \
+    echo 'echo "🦷 Bienvenido al entorno de desarrollo de DentalSync!"' >> ~/.bashrc && \
+    echo 'echo "📁 Workspace: /workspace"' >> ~/.bashrc && \
+    echo 'echo "🔧 Herramientas disponibles: PHP $(php --version | head -n1 | cut -d" " -f2), Node.js $(node --version), Composer $(composer --version --no-ansi | cut -d" " -f3)"' >> ~/.bashrc
+
+# ============================================================================
+# SCRIPTS DE INICIALIZACIÓN
+# ============================================================================
+
+# Crear directorio para scripts
+RUN mkdir -p /home/developer/scripts
+
+# Script para instalar dependencias del proyecto
+RUN echo '#!/bin/bash' > /home/developer/scripts/install-deps.sh && \
+    echo 'echo "🔧 Instalando dependencias de PHP..."' >> /home/developer/scripts/install-deps.sh && \
+    echo 'composer install --no-interaction --prefer-dist --optimize-autoloader' >> /home/developer/scripts/install-deps.sh && \
+    echo 'echo "📦 Instalando dependencias de Node.js..."' >> /home/developer/scripts/install-deps.sh && \
+    echo 'npm install' >> /home/developer/scripts/install-deps.sh && \
+    echo 'echo "✅ Dependencias instaladas correctamente!"' >> /home/developer/scripts/install-deps.sh && \
+    chmod +x /home/developer/scripts/install-deps.sh
+
+# Script para configurar el proyecto
+RUN echo '#!/bin/bash' > /home/developer/scripts/setup-project.sh && \
+    echo 'echo "🚀 Configurando proyecto DentalSync..."' >> /home/developer/scripts/setup-project.sh && \
+    echo 'if [ ! -f .env ]; then' >> /home/developer/scripts/setup-project.sh && \
+    echo '  cp .env.example .env' >> /home/developer/scripts/setup-project.sh && \
+    echo '  echo "📄 Archivo .env creado"' >> /home/developer/scripts/setup-project.sh && \
+    echo 'fi' >> /home/developer/scripts/setup-project.sh && \
+    echo 'php artisan key:generate --ansi' >> /home/developer/scripts/setup-project.sh && \
+    echo 'if [ ! -f database/database.sqlite ]; then' >> /home/developer/scripts/setup-project.sh && \
+    echo '  touch database/database.sqlite' >> /home/developer/scripts/setup-project.sh && \
+    echo '  echo "🗄️ Base de datos SQLite creada"' >> /home/developer/scripts/setup-project.sh && \
+    echo 'fi' >> /home/developer/scripts/setup-project.sh && \
+    echo 'php artisan migrate --force' >> /home/developer/scripts/setup-project.sh && \
+    echo 'echo "✅ Proyecto configurado correctamente!"' >> /home/developer/scripts/setup-project.sh && \
+    chmod +x /home/developer/scripts/setup-project.sh
+
+# Agregar scripts al PATH
+RUN echo 'export PATH="/home/developer/scripts:$PATH"' >> ~/.bashrc
+
+# ============================================================================
+# EXPOSICIÓN DE PUERTOS
+# ============================================================================
+
+# Puerto para Laravel (desarrollo)
+EXPOSE 8000
+
+# Puerto para Vite (desarrollo frontend)
+EXPOSE 5173
+
+# Puerto para hot reload
+EXPOSE 24678
+
+# ============================================================================
+# COMANDO POR DEFECTO
+# ============================================================================
+
+# Mantener el contenedor activo
+CMD ["tail", "-f", "/dev/null"]
