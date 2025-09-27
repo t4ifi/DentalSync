@@ -3,8 +3,6 @@
 # Configuración completa para entorno de desarrollo
 # ============================================================================
 
-version: '3.8'
-
 # ============================================================================
 # SERVICIOS
 # ============================================================================
@@ -47,7 +45,6 @@ services:
       - dentalsync-network
     depends_on:
       - database
-      - redis
     # Comando para mantener el contenedor activo
     command: tail -f /dev/null
 
@@ -71,42 +68,10 @@ services:
       # Configuración personalizada de MariaDB
       - ./mariadb/mariadb.cnf:/etc/mysql/conf.d/custom.cnf
     ports:
-      - "3306:3306"
+      - "3307:3306"
     networks:
       - dentalsync-network
     command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
-
-  # --------------------------------------------------------------------------
-  # REDIS (CACHE Y SESIONES)
-  # --------------------------------------------------------------------------
-  redis:
-    image: redis:7-alpine
-    container_name: dentalsync-redis
-    restart: unless-stopped
-    ports:
-      - "6379:6379"
-    volumes:
-      - redis_data:/data
-    networks:
-      - dentalsync-network
-    command: redis-server --appendonly yes
-
-
-
-  # --------------------------------------------------------------------------
-  # MAILPIT (SERVIDOR DE CORREO PARA DESARROLLO)
-  # --------------------------------------------------------------------------
-  mailpit:
-    image: axllent/mailpit:latest
-    container_name: dentalsync-mailpit
-    restart: unless-stopped
-    ports:
-      # SMTP server
-      - "1025:1025"
-      # Web interface
-      - "8025:8025"
-    networks:
-      - dentalsync-network
 
 # ============================================================================
 # VOLÚMENES PERSISTENTES
@@ -117,11 +82,6 @@ volumes:
   mariadb_data:
     driver: local
     name: dentalsync_mariadb_data
-
-  # Datos de Redis
-  redis_data:
-    driver: local
-    name: dentalsync_redis_data
 
   # Caché de Composer
   composer_cache:

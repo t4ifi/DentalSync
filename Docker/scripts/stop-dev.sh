@@ -19,13 +19,13 @@ echo -e "${NC}"
 
 # Detener servicios
 echo -e "${YELLOW}🛑 Deteniendo servicios de desarrollo...${NC}"
-docker-compose -f Docker/docker-compose.dev.yml down
+docker compose -f ../docker-compose.dev.yml down
 
 echo -e "${YELLOW}🧹 ¿Quieres limpiar volúmenes también? (y/N)${NC}"
 read -r response
 if [[ "$response" =~ ^([yY][eE][sS]|[yY])$ ]]; then
     echo -e "${YELLOW}🗑️  Limpiando volúmenes...${NC}"
-    docker-compose -f Docker/docker-compose.dev.yml down -v
+    docker compose -f ../docker-compose.dev.yml down -v
     docker system prune -f
     echo -e "${CYAN}✅ Volúmenes limpiados${NC}"
 fi

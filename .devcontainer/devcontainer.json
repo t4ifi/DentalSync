@@ -135,9 +135,7 @@
   "forwardPorts": [
     8000,  // Laravel
     5173,  // Vite
-    3306,  // MariaDB
-    6379,  // Redis
-    8025   // Mailpit
+    3307   // MariaDB
   ],
   
   // Etiquetas para los puertos

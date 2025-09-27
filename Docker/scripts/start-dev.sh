@@ -26,7 +26,7 @@ fi
 
 # Construir y levantar contenedores
 echo -e "${BLUE}🏗️  Construyendo e iniciando contenedores...${NC}"
-docker-compose -f Docker/docker-compose.dev.yml up -d --build
+docker compose -f ../docker-compose.dev.yml up -d --build
 
 # Esperar a que los contenedores estén listos
 echo -e "${BLUE}⏳ Esperando a que los servicios estén listos...${NC}"
@@ -34,18 +34,17 @@ sleep 10
 
 # Mostrar estado de los contenedores
 echo -e "${BLUE}📊 Estado de los contenedores:${NC}"
-docker-compose -f Docker/docker-compose.dev.yml ps
+docker compose -f ../docker-compose.dev.yml ps
 
 echo -e "${GREEN}✅ ¡Entorno de desarrollo listo!${NC}"
 echo ""
 echo -e "${CYAN}🌐 Servicios disponibles:${NC}"
 echo -e "  📱 Aplicación: http://localhost:8000"
 echo -e "  ⚡ Vite Dev: http://localhost:5173"
-echo -e "  🗄️  MariaDB: localhost:3306"
-echo -e "  📧 Mailpit: http://localhost:8025"
+echo -e "  🗄️  MariaDB: localhost:3307"
 echo ""
 echo -e "${CYAN}🔧 Para entrar al contenedor:${NC}"
 echo -e "  docker exec -it dentalsync-dev bash"
 echo ""
 echo -e "${CYAN}🛑 Para detener todo:${NC}"
-echo -e "  docker-compose -f Docker/docker-compose.dev.yml down"
+echo -e "  docker compose -f ../docker-compose.dev.yml down"

@@ -44,6 +44,7 @@ RUN apt-get install -y \
     libxml2-dev \
     libpq-dev \
     libsqlite3-dev \
+    libcurl4-openssl-dev \
     # Para compilar extensiones
     build-essential \
     # Herramientas de red
@@ -72,9 +73,7 @@ RUN docker-php-ext-install -j$(nproc) \
     gd \
     xml \
     curl \
-    fileinfo \
-    json \
-    tokenizer
+    fileinfo
 
 # Configurar PHP para desarrollo
 RUN cp /usr/local/etc/php/php.ini-development /usr/local/etc/php/php.ini

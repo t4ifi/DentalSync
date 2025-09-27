@@ -65,13 +65,8 @@ Esta guía te ayudará a configurar y usar el entorno de desarrollo completo de 
 ├─────────────────────────────────────────────────────────────┤
 │  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐         │
 │  │   Laravel   │  │    Vue.js   │  │   MariaDB   │         │
-│  │  (Port 8000)│  │ (Port 5173) │  │ (Port 3306) │         │
+│  │  (Port 8000)│  │ (Port 5173) │  │ (Port 3307) │         │
 │  └─────────────┘  └─────────────┘  └─────────────┘         │
-│                                                             │
-│  ┌─────────────┐  ┌─────────────┐                          │
-│  │    Redis    │  │   Mailpit   │                          │
-│  │ (Port 6379) │  │ (Port 8025) │                          │
-│  └─────────────┘  └─────────────┘                          │
 │                                                             │
 │  ┌─────────────────────────────────────────────────────┐   │
 │  │              Volúmenes Persistentes                │   │
@@ -94,20 +89,9 @@ Esta guía te ayudará a configurar y usar el entorno de desarrollo completo de 
 
 ### 🗄️ Base de Datos (dentalsync-mariadb)
 - **Imagen:** MariaDB 11.2
-- **Puerto:** 3306
+- **Puerto:** 3307
 - **Usuario:** `dentalsync` | **Contraseña:** `password`
 - **Base de datos:** `dentalsync`
-
-### 🚀 Cache (dentalsync-redis)
-- **Imagen:** Redis 7 Alpine
-- **Puerto:** 6379
-- **Persistencia:** Habilitada con AOF
-
-### 📧 Correo (dentalsync-mailpit)
-- **Imagen:** Mailpit latest
-- **Puerto SMTP:** 1025
-- **Interfaz Web:** 8025
-- **Uso:** Captura todos los emails enviados por la aplicación
 
 ---
 
@@ -279,7 +263,7 @@ Con la extensión Database Client:
 3. Seleccionar MySQL/MariaDB
 4. Configurar:
    - **Host:** `localhost`
-   - **Port:** `3306`
+   - **Port:** `3307`
    - **Username:** `dentalsync`
    - **Password:** `password`
    - **Database:** `dentalsync`
