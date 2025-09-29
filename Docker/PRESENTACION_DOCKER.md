@@ -1012,16 +1012,3 @@ A: Los volúmenes Docker persisten datos. `docker volume backup` para backup.
 - [Vue.js Guide](https://vuejs.org/guide/)
 
 ---
-
-**¡Gracias por su atención! 🦷✨**
-
-### 💬 Contacto
-
-¿Preguntas sobre la implementación?  
-📧 Email: dev@dentalsync.com  
-🐛 Issues: GitHub Issues  
-📖 Docs: /Docker/README.md
-
----
-
-*Esta presentación fue generada automáticamente como parte del sistema de documentación de DentalSync.*
