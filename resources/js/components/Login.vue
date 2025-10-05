@@ -63,8 +63,9 @@
 
 <script>
 import axios from 'axios';
-
+import Dashboard from './Dashboard.vue';
 export default {
+  components: { Dashboard },
   data() {
     return {
       usuario: '',
@@ -109,8 +110,12 @@ export default {
           this.loggedIn = true;
           this.loggingIn = false;
           
-          // Por ahora solo mostrar éxito, sin redirección
-          console.log('Login exitoso:', this.usuarioGuardado);
+          // Redirección inmediata al dashboard correspondiente
+          if (this.usuarioGuardado.rol === 'dentista') {
+            this.$router.push('/panel-dentista');
+          } else {
+            this.$router.push('/panel-recepcionista');
+          }
         }, 400); // Solo 0.4 segundos para que sea más fluido
         
       } catch (err) {
@@ -186,7 +191,7 @@ export default {
 .login__img {
   flex: 1 1 300px;
   background-color: #a259ff;
-  background-image: url('/Logo.png');
+  background-image: url('/LogoApp-Photoroom.png');
   background-repeat: no-repeat;
   background-position: center -20%;
   background-size: 120%;
