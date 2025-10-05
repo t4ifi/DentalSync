@@ -2,51 +2,100 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
+use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Carbon\Carbon;
+use Illuminate\Notifications\Notifiable;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 /**
- * Clase Usuario
+ * ============================================================================
+ * MODELO USUARIO - DENTALSYNC
+ * ============================================================================
  *
- * Representa un usuario del sistema, distinto del modelo `User` de autenticación de Laravel.
- * Se utiliza para manejar roles internos, estado activo y credenciales hash.
+ * Representa a los usuarios del sistema DentalSync.
+ * Compatible con el sistema de autenticación de Laravel.
+ *
+ * CARACTERÍSTICAS:
+ * - Soporta autenticación y notificaciones
+ * - Puede usar soft deletes
+ * - Métodos auxiliares para actualizar actividad
  *
  * @package App\Models
+ * @author DentalSync Development Team
+ * @version 2.0
+ * @since 2025-09-04
  */
-class Usuario extends Model
+class Usuario extends Authenticatable
 {
-    /**
-     * Nombre de la tabla asociada en la base de datos.
-     *
-     * @var string
-     */
+    use HasFactory, Notifiable;
+
     protected $table = 'usuarios';
-
-    /**
-     * Campos que se pueden asignar masivamente (mass assignment).
-     *
-     * @var array<int, string>
-     */
+    
     protected $fillable = [
-        'usuario',       // Nombre de usuario único
-        'nombre',        // Nombre completo
-        'rol',           // Rol del usuario (ej: dentista, recepcionista)
-        'password_hash', // Contraseña en formato hash
-        'activo'         // Estado del usuario (activo/inactivo)
+        'usuario', 'nombre', 'rol', 'password_hash', 'activo', 'ultimo_acceso', 'last_activity'
     ];
-
-    /**
-     * Indica si el modelo debe mantener automáticamente los timestamps `created_at` y `updated_at`.
-     *
-     * @var bool
-     */
-    public $timestamps = true;
-
-    /**
-     * Atributos que deben ocultarse durante la serialización (ej: JSON).
-     *
-     * @var array<int, string>
-     */
+    
     protected $hidden = [
-        'password_hash', // Para no exponer la contraseña
+        'password_hash',
+        'remember_token',
     ];
+    
+    protected $casts = [
+        'activo' => 'boolean',
+        'ultimo_acceso' => 'datetime',
+        'last_activity' => 'datetime',
+    ];
+    
+    // Para compatibilidad con Laravel Auth
+    public function getAuthPassword()
+    {
+        return $this->password_hash;
+    }
+    
+    public function getAuthIdentifierName()
+    {
+        return 'id';
+    }
+    
+    public function getAuthIdentifier()
+    {
+        return $this->getKey();
+    }
+    
+    /**
+     * Verificar si el usuario está activo
+     */
+    public function isActive(): bool
+    {
+        return $this->activo === true;
+    }
+    
+    /**
+     * Actualizar última actividad
+     *
+     * Este método actualiza el campo `last_activity` y `ultimo_acceso` de
+     * el usuario a la fecha y hora actuales.
+     *
+     * @return void
+     */
+    public function updateLastActivity(): void
+    {
+        $this->update([
+            'last_activity' => now(),
+            'ultimo_acceso' => now()
+        ]);
+    }
+    
+    /**
+     * Verificar si la sesión ha expirado (más de 1 hora sin actividad)
+     */
+    public function isSessionExpired(): bool
+    {
+        if (!$this->last_activity) {
+            return true;
+        }
+        
+        return Carbon::parse($this->last_activity)->diffInHours(now()) > 1;
+    }
 }

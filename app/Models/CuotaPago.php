@@ -5,56 +5,71 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-/**
- * Clase CuotaPago
- *
- * Representa una cuota asociada a un pago dentro del sistema de gestión odontológica.
- * Un pago puede dividirse en varias cuotas, cada una con su propio número, monto, fecha de vencimiento y estado.
- *
- * @package App\Models
- */
 class CuotaPago extends Model
 {
     use HasFactory;
 
-    /**
-     * Nombre de la tabla asociada en la base de datos.
-     *
-     * @var string
-     */
     protected $table = 'cuotas_pago';
 
-    /**
-     * Campos que se pueden asignar masivamente (mass assignment).
-     *
-     * @var array<int, string>
-     */
     protected $fillable = [
-        'pago_id',           // ID del pago al que pertenece esta cuota
-        'numero_cuota',      // Número de la cuota (ejemplo: 1, 2, 3…)
-        'monto',             // Monto correspondiente a esta cuota
-        'fecha_vencimiento', // Fecha límite para el pago de la cuota
-        'estado'             // Estado actual (ej: pendiente, pagada, vencida)
+        'pago_id',
+        'numero_cuota',
+        'monto',
+        'fecha_vencimiento',
+        'estado'
     ];
 
-    /**
-     * Conversión automática de campos a tipos de dato específicos.
-     *
-     * @var array<string, string>
-     */
     protected $casts = [
-        'fecha_vencimiento' => 'date',        // Convierte a instancia de Carbon (solo fecha, sin hora)
-        'monto' => 'decimal:2'                // Maneja el monto con 2 decimales
+        'fecha_vencimiento' => 'date',
+        'monto' => 'decimal:2'
     ];
 
     /**
-     * Relación con el modelo Pago.
-     * Una cuota pertenece a un único pago.
-     *
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     * Relación con el pago principal
      */
     public function pago()
     {
         return $this->belongsTo(Pago::class);
+    }
+
+    /**
+     * Scope para cuotas pendientes
+     */
+    public function scopePendientes($query)
+    {
+        return $query->where('estado', 'pendiente');
+    }
+
+    /**
+     * Scope para cuotas pagadas
+     */
+    public function scopePagadas($query)
+    {
+        return $query->where('estado', 'pagada');
+    }
+
+    /**
+     * Scope para cuotas vencidas
+     */
+    public function scopeVencidas($query)
+    {
+        return $query->where('estado', 'pendiente')
+                    ->where('fecha_vencimiento', '<', now());
+    }
+
+    /**
+     * Marcar cuota como pagada
+     */
+    public function marcarComoPagada()
+    {
+        $this->update(['estado' => 'pagada']);
+    }
+
+    /**
+     * Verificar si la cuota está vencida
+     */
+    public function estaVencida()
+    {
+        return $this->estado === 'pendiente' && $this->fecha_vencimiento < now();
     }
 }
