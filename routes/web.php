@@ -3,10 +3,14 @@
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
+    return redirect('/citas');
+});
+
+Route::get('/app', function () {
     return view('app');
 });
 
-Route::get('/login', function () {
+Route::get('/citas', function () {
     return view('app');
 });
 
