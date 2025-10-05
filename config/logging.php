@@ -61,16 +61,18 @@ return [
         'single' => [
             'driver' => 'single',
             'path' => storage_path('logs/laravel.log'),
-            'level' => env('LOG_LEVEL', 'debug'),
+            'level' => env('LOG_LEVEL', 'warning'),
             'replace_placeholders' => true,
+            'permission' => 0644, // Permisos seguros
         ],
 
         'daily' => [
             'driver' => 'daily',
             'path' => storage_path('logs/laravel.log'),
-            'level' => env('LOG_LEVEL', 'debug'),
-            'days' => env('LOG_DAILY_DAYS', 14),
+            'level' => env('LOG_LEVEL', 'warning'),
+            'days' => env('LOG_DAILY_DAYS', 7), // Reducido a 7 días
             'replace_placeholders' => true,
+            'permission' => 0644, // Permisos seguros
         ],
 
         'slack' => [
@@ -125,6 +127,24 @@ return [
 
         'emergency' => [
             'path' => storage_path('logs/laravel.log'),
+        ],
+
+        'audit' => [
+            'driver' => 'daily',
+            'path' => storage_path('logs/audit.log'),
+            'level' => env('LOG_LEVEL', 'info'),
+            'days' => env('LOG_AUDIT_DAYS', 365), // Mantener auditoría por 1 año
+            'replace_placeholders' => true,
+            'permission' => 0600, // Solo lectura para el propietario
+        ],
+
+        'security' => [
+            'driver' => 'daily',
+            'path' => storage_path('logs/security.log'),
+            'level' => env('LOG_LEVEL', 'warning'),
+            'days' => env('LOG_SECURITY_DAYS', 90), // Mantener logs de seguridad por 3 meses
+            'replace_placeholders' => true,
+            'permission' => 0600, // Solo lectura para el propietario
         ],
 
     ],
