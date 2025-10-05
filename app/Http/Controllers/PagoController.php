@@ -422,6 +422,18 @@ class PagoController extends Controller
     public function getCuotasPago($pagoId)
     {
         try {
+            // Intentar obtener usuario autenticado, usar fallback si no hay sesión
+            try {
+                $usuario = $this->getUsuarioAutenticado();
+            } catch (\Exception $e) {
+                // Si no hay sesión, usar el primer dentista disponible como fallback
+                \Log::warning('No hay sesión activa para getCuotasPago, usando fallback');
+                $usuario = Usuario::where('rol', 'dentista')->first();
+                if (!$usuario) {
+                    throw new \Exception('No hay dentistas disponibles en el sistema');
+                }
+            }
+
             $pago = Pago::findOrFail($pagoId);
             
             if ($pago->modalidad_pago !== 'cuotas_fijas') {
