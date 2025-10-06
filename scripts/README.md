@@ -1,4 +1,12 @@
-# 📁 Scripts de Gestión de DentalSync
+# 📁 Scripts de Gestión de De### 1. **`menu.sh`** - Menú Principal
+Script interactivo que permite acceder a todas las funcionalidades:
+- ✅ Configurar MariaDB (primera vez)
+- ✅ Crear usuarios (admin, doctor, recepcionista)
+- ✅ Crear pacientes
+- ✅ Crear datos de prueba completos
+- ✅ Listar todos los datos
+- ✅ Limpiar base de datos
+- ✅ Ejecutar migraciones
 
 Esta carpeta contiene scripts para gestionar datos de la base de datos de DentalSync de forma interactiva.
 
@@ -78,7 +86,22 @@ Crea un conjunto completo de datos para testing:
 - Implante Dental ($15,000)
 - Ortodoncia mensual ($3,000)
 
-### 5. **`listar-datos.php`** - Explorador de Datos
+### 5. **`setup-mariadb.sh`** - Configuración de MariaDB
+Script automatizado para configurar MariaDB en el sistema:
+- **Verificación**: Comprueba instalación y estado de MariaDB
+- **Configuración**: Crea base de datos y configura permisos
+- **Actualización**: Modifica archivos .env automáticamente
+- **Migraciones**: Ejecuta migraciones de Laravel
+- **Verificación**: Confirma que todo esté funcionando
+
+**Funcionalidades:**
+- ✅ Detección automática de MariaDB
+- ✅ Creación de base de datos
+- ✅ Configuración de .env
+- ✅ Ejecución de migraciones
+- ✅ Verificación de tablas
+
+### 6. **`listar-datos.php`** - Explorador de Datos
 Sistema interactivo para ver todos los datos:
 - **👨‍⚕️ Usuarios**: Lista todos los usuarios con roles
 - **👥 Pacientes**: Lista pacientes con edad calculada
@@ -90,18 +113,19 @@ Sistema interactivo para ver todos los datos:
 ## 🔧 Requisitos
 
 - **PHP 8.2+** con extensiones Laravel
-- **Base de datos** configurada (SQLite o MariaDB)
+- **Base de datos** configurada (MariaDB/MySQL)
 - **Conexión** a la base de datos funcionando
 - **Migraciones** ejecutadas
 
 ## 💡 Ejemplos de Uso
 
-### **Configuración inicial completa:**
+### **Configuración inicial completa (Primera vez):**
 ```bash
 cd scripts
 ./menu.sh
-# Seleccionar opción 3: Crear datos de prueba
-# Seleccionar opción 4: Listar datos para verificar
+# Seleccionar opción 1: Configurar MariaDB
+# Seleccionar opción 4: Crear datos de prueba
+# Seleccionar opción 5: Listar datos para verificar
 ```
 
 ### **Crear usuario administrador:**
@@ -124,9 +148,10 @@ php listar-datos.php
 - Campos de seguridad automáticos para usuarios
 
 ### **Base de Datos:**
-- Scripts verifican que las migraciones estén ejecutadas
+- Scripts verifican que las migraciones estén ejecutadas en MariaDB
 - Manejo de errores de conexión
 - Transacciones para operaciones complejas
+- Configurado para MariaDB/MySQL
 
 ### **Interactividad:**
 - Menús coloridos y fáciles de usar
@@ -144,25 +169,37 @@ cd /ruta/a/DentalSync/scripts
 
 ### **Error: "Base table or view not found"**
 ```bash
-# Ejecutar migraciones primero
+# Configurar MariaDB primero
 ./menu.sh
-# Seleccionar opción 6: Ejecutar migraciones
+# Seleccionar opción 1: Configurar MariaDB
 ```
 
 ### **Error de conexión a base de datos**
 ```bash
-# Verificar .env en directorio raíz
 # Verificar que MariaDB esté corriendo
-docker ps | grep mariadb
+sudo systemctl status mariadb
+# Si no está corriendo:
+sudo systemctl start mariadb
+
+# Reconfigurar base de datos
+./setup-mariadb.sh
+```
+
+### **Error: "Access denied for user"**
+```bash
+# Verificar credenciales de MariaDB
+# Ejecutar configuración nuevamente
+./setup-mariadb.sh
 ```
 
 ## 📈 Flujo Recomendado
 
-1. **Configurar base de datos** (migraciones)
-2. **Crear datos de prueba** (usuarios, pacientes, tratamientos)
-3. **Verificar datos** (listar para confirmar)
-4. **Crear usuarios reales** según necesidades
-5. **Usar sistema web** con datos poblados
+1. **Instalar MariaDB** en el sistema
+2. **Configurar base de datos** (`./menu.sh` → opción 1)
+3. **Crear datos de prueba** (usuarios, pacientes, tratamientos)
+4. **Verificar datos** (listar para confirmar)
+5. **Crear usuarios reales** según necesidades
+6. **Usar sistema web** con datos poblados
 
 ---
 
