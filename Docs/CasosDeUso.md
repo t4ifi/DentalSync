@@ -1008,74 +1008,188 @@
 
 ## 📊 CASOS DE USO DE REPORTES
 
-### **CU-30: Generar Reporte de Citas**
-- **Nombre:** Consultar Estadísticas de Agenda
+### **CU-30: Generar Reporte PDF de Pacientes**
+- **Nombre:** Exportar Lista de Pacientes en PDF
 - **Rol:** Dentista, Recepcionista
-- **Descripción:** Permite generar reportes detallados sobre las citas del consultorio
+- **Descripción:** Permite generar y descargar un reporte en PDF con la lista completa de pacientes
 - **Actores:** Dentista, Recepcionista
 - **Pre-condiciones:**
   - Usuario autenticado
-  - Datos de citas en el sistema
+  - Pacientes registrados en el sistema
 - **Flujo Principal:**
-  1. Usuario accede a "Reportes de Citas"
-  2. Sistema muestra opciones de filtro
-  3. Usuario selecciona período de tiempo
-  4. Usuario puede filtrar por dentista
-  5. Usuario puede filtrar por estado de cita
-  6. Sistema genera reporte con estadísticas
-  7. Sistema muestra total de citas por estado
-  8. Sistema muestra porcentaje de ausentismo
-  9. Sistema calcula promedio de citas por día
-  10. Usuario puede exportar reporte
+  1. Usuario accede al módulo "Ver Pacientes"
+  2. Usuario aplica filtros deseados (edad, fecha registro, etc.)
+  3. Usuario selecciona "Exportar PDF"
+  4. Sistema genera documento PDF con datos filtrados
+  5. Sistema incluye información: nombre, teléfono, edad, última visita
+  6. Sistema aplica formato profesional con logo de la clínica
+  7. Sistema incluye fecha y hora de generación
+  8. Sistema inicia descarga automática del archivo
+  9. Sistema registra la exportación en logs de auditoría
 - **Flujo Alternativo:**
-  - **6a.** Sin datos en período: Sistema muestra reporte vacío
+  - **4a.** Sin pacientes para exportar: Sistema muestra mensaje informativo
+  - **8a.** Error en generación: Sistema permite reintentar
 - **Post-condiciones:**
-  - Reporte de citas generado
-  - Estadísticas calculadas
-  - Opción de exportación disponible
+  - Archivo PDF generado y descargado
+  - Exportación registrada en auditoría
 - **Requisitos:**
-  - Filtros múltiples
-  - Cálculos estadísticos precisos
-  - Exportación a múltiples formatos
+  - Librería jsPDF integrada
+  - Formato profesional consistente
+  - Filtros aplicados correctamente
 - **Observaciones:**
-  - Útil para optimizar gestión de agenda
+  - Útil para reportes administrativos y auditorías externas
 
-### **CU-31: Generar Reporte de Tratamientos**
-- **Nombre:** Consultar Estadísticas Clínicas
+### **CU-31: Generar Reporte Financiero de Pagos**
+- **Nombre:** Exportar Resumen Financiero en PDF/Excel
+- **Rol:** Dentista, Recepcionista
+- **Descripción:** Permite generar reportes financieros detallados con estadísticas de pagos
+- **Actores:** Dentista, Recepcionista
+- **Pre-condiciones:**
+  - Usuario autenticado
+  - Datos de pagos en el sistema
+- **Flujo Principal:**
+  1. Usuario accede a "Gestión de Pagos"
+  2. Sistema muestra dashboard con resumen financiero
+  3. Usuario selecciona período de análisis
+  4. Usuario puede filtrar por modalidad de pago o estado
+  5. Usuario selecciona "Exportar Reporte"
+  6. Sistema genera reporte con métricas financieras:
+     - Total ingresos del período
+     - Pagos pendientes por cobrar
+     - Cuotas vencidas
+     - Distribución por modalidad de pago
+     - Top 10 pacientes con mayor deuda
+  7. Sistema incluye gráficos y tablas detalladas
+  8. Sistema ofrece exportación en PDF o Excel
+  9. Usuario descarga reporte en formato seleccionado
+- **Flujo Alternativo:**
+  - **6a.** Sin datos en período: Sistema genera reporte vacío con mensaje
+  - **8a.** Error en generación: Sistema permite seleccionar formato alternativo
+- **Post-condiciones:**
+  - Reporte financiero completo generado
+  - Métricas calculadas correctamente
+  - Archivo descargado en formato solicitado
+- **Requisitos:**
+  - Cálculos financieros precisos
+  - Múltiples formatos de exportación
+  - Gráficos y visualizaciones claras
+- **Observaciones:**
+  - Información crítica para gestión financiera y contabilidad
+
+### **CU-32: Generar Reporte de Citas por Período**
+- **Nombre:** Exportar Estadísticas de Agenda
+- **Rol:** Dentista, Recepcionista
+- **Descripción:** Permite generar reportes detallados sobre las citas del consultorio con métricas de eficiencia
+- **Actores:** Dentista, Recepcionista
+- **Pre-condiciones:**
+  - Usuario autenticado
+  - Citas registradas en el sistema
+- **Flujo Principal:**
+  1. Usuario accede al módulo "Calendario de Citas"
+  2. Usuario selecciona "Generar Reporte de Citas"
+  3. Sistema solicita parámetros de filtro:
+     - Rango de fechas
+     - Dentista específico (opcional)
+     - Estado de citas
+  4. Sistema genera análisis estadístico:
+     - Total de citas programadas
+     - Citas atendidas vs. canceladas
+     - Tasa de ausentismo por período
+     - Promedio de citas por día
+     - Distribución por horarios
+     - Motivos de consulta más frecuentes
+  5. Sistema crea reporte visual con gráficos
+  6. Usuario puede exportar en PDF con diseño profesional
+  7. Sistema incluye recomendaciones para optimización
+- **Flujo Alternativo:**
+  - **4a.** Período sin citas: Sistema muestra reporte con mensaje informativo
+  - **6a.** Error en exportación: Sistema ofrece vista web del reporte
+- **Post-condiciones:**
+  - Reporte de citas generado con estadísticas
+  - Análisis de eficiencia disponible
+  - Recomendaciones para mejora incluidas
+- **Requisitos:**
+  - Cálculos estadísticos automatizados
+  - Visualizaciones gráficas integradas
+  - Formato de reporte profesional
+- **Observaciones:**
+  - Ayuda a optimizar la gestión de agenda y recursos
+
+### **CU-33: Generar Reporte de Tratamientos por Paciente**
+- **Nombre:** Exportar Historial Clínico Completo
 - **Rol:** Dentista
-- **Descripción:** Permite generar reportes sobre tratamientos realizados
+- **Descripción:** Permite generar reportes PDF del historial clínico completo de pacientes específicos
 - **Actores:** Dentista
 - **Pre-condiciones:**
   - Usuario autenticado como dentista
-  - Tratamientos registrados en el sistema
+  - Paciente con historial clínico registrado
 - **Flujo Principal:**
-  1. Dentista accede a "Reportes Clínicos"
-  2. Sistema muestra opciones de reporte
-  3. Dentista selecciona período
-  4. Sistema puede filtrar por tipo de tratamiento
-  5. Sistema genera estadísticas clínicas
-  6. Sistema muestra tratamientos más frecuentes
-  7. Sistema calcula tiempo promedio por tratamiento
-  8. Sistema muestra pacientes con más tratamientos
-  9. Dentista puede exportar reporte médico
+  1. Dentista accede al perfil del paciente
+  2. Dentista selecciona "Generar Reporte Médico"
+  3. Sistema compila información clínica:
+     - Datos personales y médicos del paciente
+     - Historial completo de tratamientos
+     - Observaciones y evolución clínica
+     - Placas dentales adjuntas
+     - Fechas de todas las consultas
+  4. Sistema aplica formato médico profesional
+  5. Sistema incluye firma digital del dentista
+  6. Sistema genera PDF con confidencialidad médica
+  7. Dentista puede imprimir o enviar digitalmente
 - **Flujo Alternativo:**
-  - **5a.** Sin datos clínicos: Sistema muestra reporte vacío
+  - **3a.** Paciente sin historial: Sistema genera reporte básico con datos personales
+  - **6a.** Error en generación: Sistema permite generación parcial
 - **Post-condiciones:**
-  - Reporte clínico generado
-  - Estadísticas médicas calculadas
-  - Información para análisis clínico disponible
+  - Reporte médico completo generado
+  - Confidencialidad médica preservada
+  - Documento con validez clínica
 - **Requisitos:**
-  - Privacidad de datos médicos
-  - Estadísticas clínicamente relevantes
-  - Exportación segura
+  - Acceso restringido solo a dentistas
+  - Formato médico profesional
+  - Protección de datos médicos sensibles
 - **Observaciones:**
-  - Solo accesible por dentistas por confidencialidad médica
+  - Útil para referencias médicas, segundas opiniones y documentación legal
+
+### **CU-34: Dashboard de Métricas en Tiempo Real**
+- **Nombre:** Visualizar Indicadores de Rendimiento del Consultorio
+- **Rol:** Dentista, Recepcionista
+- **Descripción:** Permite consultar métricas y KPIs del consultorio en tiempo real sin necesidad de exportación
+- **Actores:** Dentista, Recepcionista
+- **Pre-condiciones:**
+  - Usuario autenticado
+  - Datos suficientes en el sistema para cálculos
+- **Flujo Principal:**
+  1. Usuario accede al dashboard principal
+  2. Sistema calcula automáticamente métricas clave:
+     - Ingresos del mes actual vs. anterior
+     - Número de pacientes activos
+     - Citas programadas próximos 7 días
+     - Cuotas por vencer esta semana
+     - Tasa de ocupación de agenda
+     - Tratamientos activos vs. finalizados
+  3. Sistema presenta información en cards visuales
+  4. Sistema actualiza métricas cada vez que se accede
+  5. Usuario puede hacer clic en métricas para ver detalles
+  6. Sistema permite filtrar por período personalizado
+- **Flujo Alternativo:**
+  - **2a.** Datos insuficientes: Sistema muestra mensaje con instrucciones
+  - **4a.** Error en cálculos: Sistema muestra métricas parciales disponibles
+- **Post-condiciones:**
+  - Métricas actualizadas desplegadas
+  - Información de gestión disponible
+  - Navegación detallada habilitada
+- **Requisitos:**
+  - Cálculos eficientes en tiempo real
+  - Interfaz visual intuitiva
+  - Navegación hacia módulos específicos
+- **Observaciones:**
+  - Funciona como centro de control para gestión diaria del consultorio
 
 ---
 
 ## � CASOS DE USO DE AUDITORÍA Y SEGURIDAD
 
-### **CU-32: Registrar Logs de Seguridad**
+### **CU-35: Registrar Logs de Seguridad**
 - **Nombre:** Registrar Eventos de Seguridad
 - **Rol:** Sistema (Automático)
 - **Descripción:** El sistema registra automáticamente todos los eventos de seguridad críticos
@@ -1101,7 +1215,7 @@
 - **Observaciones:**
   - Crítico para cumplimiento de normativas de seguridad
 
-### **CU-33: Auditar Operaciones Críticas**
+### **CU-36: Auditar Operaciones Críticas**
 - **Nombre:** Registro de Auditoría de Operaciones
 - **Rol:** Sistema (Automático)
 - **Descripción:** Sistema registra automáticamente todas las operaciones críticas del negocio
@@ -1127,7 +1241,7 @@
 - **Observaciones:**
   - Incluye creación/modificación de pacientes, pagos, tratamientos
 
-### **CU-34: Rastrear Intentos de Login Fallidos**
+### **CU-37: Rastrear Intentos de Login Fallidos**
 - **Nombre:** Monitoreo de Accesos Fallidos
 - **Rol:** Sistema (Automático)
 - **Descripción:** Sistema rastrea y responde a intentos de login fallidos para prevenir ataques
@@ -1154,7 +1268,7 @@
 - **Observaciones:**
   - Previene ataques de fuerza bruta efectivamente
 
-### **CU-35: Gestionar Rate Limiting por IP**
+### **CU-38: Gestionar Rate Limiting por IP**
 - **Nombre:** Control de Límites de Peticiones
 - **Rol:** Sistema (Automático)
 - **Descripción:** Sistema controla automáticamente la cantidad de peticiones por IP para prevenir abuso
@@ -1181,7 +1295,7 @@
 - **Observaciones:**
   - Login: 5/min, API general: 60/min, Admin: 30/min
 
-### **CU-36: Verificar Integridad de Sesiones**
+### **CU-39: Verificar Integridad de Sesiones**
 - **Nombre:** Validación de Sesiones Activas
 - **Rol:** Sistema (Automático)
 - **Descripción:** Sistema verifica continuamente la integridad y validez de las sesiones activas
@@ -1213,7 +1327,7 @@
 
 ## 📱 CASOS DE USO DE WHATSAPP AVANZADO
 
-### **CU-37: Programar Envíos Automáticos**
+### **CU-40: Programar Envíos Automáticos**
 - **Nombre:** Configurar Envíos Programados
 - **Rol:** Dentista, Recepcionista
 - **Descripción:** Permite programar mensajes WhatsApp para envío en fechas/horas específicas
@@ -1246,7 +1360,7 @@
 - **Observaciones:**
   - Permite automatizar recordatorios y seguimientos
 
-### **CU-38: Gestionar Variables Dinámicas**
+### **CU-41: Gestionar Variables Dinámicas**
 - **Nombre:** Procesar Variables en Plantillas
 - **Rol:** Sistema (Automático)
 - **Descripción:** Sistema reemplaza automáticamente variables en plantillas con datos reales del paciente
@@ -1275,7 +1389,7 @@
 - **Observaciones:**
   - Variables soportadas: {nombre}, {fecha}, {hora}, {dentista}, {telefono}
 
-### **CU-39: Monitorear Estadísticas de Envío**
+### **CU-42: Monitorear Estadísticas de Envío**
 - **Nombre:** Analizar Métricas de Comunicación
 - **Rol:** Dentista, Recepcionista
 - **Descripción:** Permite consultar estadísticas detalladas sobre envíos de mensajes WhatsApp
@@ -1304,7 +1418,7 @@
 - **Observaciones:**
   - Incluye métricas de efectividad por plantilla y automatización
 
-### **CU-40: Duplicar y Reutilizar Plantillas**
+### **CU-43: Duplicar y Reutilizar Plantillas**
 - **Nombre:** Gestión Avanzada de Plantillas
 - **Rol:** Dentista, Recepcionista
 - **Descripción:** Permite duplicar plantillas existentes y reutilizarlas con modificaciones
@@ -1338,7 +1452,7 @@
 
 ## 💾 CASOS DE USO DE GESTIÓN DE DATOS
 
-### **CU-41: Gestionar Cache del Sistema**
+### **CU-44: Gestionar Cache del Sistema**
 - **Nombre:** Administración de Cache
 - **Rol:** Sistema (Automático)
 - **Descripción:** Sistema gestiona automáticamente el cache para optimizar rendimiento
@@ -1367,7 +1481,7 @@
 - **Observaciones:**
   - Mejora significativamente el rendimiento de consultas frecuentes
 
-### **CU-42: Administrar Sesiones Persistentes**
+### **CU-45: Administrar Sesiones Persistentes**
 - **Nombre:** Gestión de Sesiones en Base de Datos
 - **Rol:** Sistema (Automático)
 - **Descripción:** Sistema mantiene sesiones de usuario de forma persistente en base de datos
@@ -1395,7 +1509,7 @@
 - **Observaciones:**
   - Permite continuidad de sesión ante reinicios del servidor
 
-### **CU-43: Registrar Detalles de Auditoría de Pagos**
+### **CU-46: Registrar Detalles de Auditoría de Pagos**
 - **Nombre:** Auditoría Detallada de Transacciones
 - **Rol:** Sistema (Automático)
 - **Descripción:** Sistema registra automáticamente todos los detalles de transacciones de pago
@@ -1426,7 +1540,7 @@
 
 ## 📊 CASOS DE USO DE REPORTES AVANZADOS
 
-### **CU-44: Generar Estadísticas de Sistema Completas**
+### **CU-47: Generar Estadísticas de Sistema Completas**
 - **Nombre:** Dashboard de Métricas del Sistema
 - **Rol:** Administrador
 - **Descripción:** Permite generar reportes completos sobre el uso y rendimiento del sistema
@@ -1456,7 +1570,7 @@
 - **Observaciones:**
   - Información crítica para toma de decisiones estratégicas
 
-### **CU-45: Reportar Actividad de Usuarios**
+### **CU-48: Reportar Actividad de Usuarios**
 - **Nombre:** Análisis de Actividad por Usuario
 - **Rol:** Administrador
 - **Descripción:** Permite generar reportes detallados sobre la actividad de cada usuario del sistema
@@ -1486,7 +1600,7 @@
 - **Observaciones:**
   - Útil para evaluación de productividad y uso del sistema
 
-### **CU-46: Analizar Efectividad de Comunicaciones WhatsApp**
+### **CU-49: Analizar Efectividad de Comunicaciones WhatsApp**
 - **Nombre:** Análisis de ROI de Comunicaciones
 - **Rol:** Dentista, Recepcionista
 - **Descripción:** Permite analizar la efectividad de las comunicaciones WhatsApp en resultados del negocio
@@ -1550,23 +1664,26 @@
 | CU-27: Gestionar Estado Usuario | ❌ | ❌ | ✅ | ❌ |
 | CU-28: Actualizar Usuario | ❌ | ❌ | ✅ | ❌ |
 | CU-29: Consultar Estadísticas | ❌ | ❌ | ✅ | ❌ |
-| CU-30: Reporte de Citas | ✅ | ✅ | ✅ | ❌ |
-| CU-31: Reporte de Tratamientos | ✅ | ❌ | ✅ | ❌ |
-| **CU-32: Registrar Logs de Seguridad** | ❌ | ❌ | ❌ | ✅ |
-| **CU-33: Auditar Operaciones Críticas** | ❌ | ❌ | ❌ | ✅ |
-| **CU-34: Rastrear Intentos Login Fallidos** | ❌ | ❌ | ❌ | ✅ |
-| **CU-35: Gestionar Rate Limiting** | ❌ | ❌ | ❌ | ✅ |
-| **CU-36: Verificar Integridad Sesiones** | ❌ | ❌ | ❌ | ✅ |
-| **CU-37: Programar Envíos Automáticos** | ✅ | ✅ | ✅ | ❌ |
-| **CU-38: Gestionar Variables Dinámicas** | ❌ | ❌ | ❌ | ✅ |
-| **CU-39: Monitorear Estadísticas Envío** | ✅ | ✅ | ✅ | ❌ |
-| **CU-40: Duplicar Plantillas** | ✅ | ✅ | ✅ | ❌ |
-| **CU-41: Gestionar Cache Sistema** | ❌ | ❌ | ❌ | ✅ |
-| **CU-42: Administrar Sesiones Persistentes** | ❌ | ❌ | ❌ | ✅ |
-| **CU-43: Auditoría Detalles Pagos** | ❌ | ❌ | ❌ | ✅ |
-| **CU-44: Estadísticas Sistema Completas** | ❌ | ❌ | ✅ | ❌ |
-| **CU-45: Reportar Actividad Usuarios** | ❌ | ❌ | ✅ | ❌ |
-| **CU-46: Analizar Efectividad WhatsApp** | ✅ | ✅ | ✅ | ❌ |
+| CU-30: Reporte PDF de Pacientes | ✅ | ✅ | ✅ | ❌ |
+| CU-31: Reporte Financiero de Pagos | ✅ | ✅ | ✅ | ❌ |
+| CU-32: Reporte de Citas por Período | ✅ | ✅ | ✅ | ❌ |
+| CU-33: Reporte de Tratamientos por Paciente | ✅ | ❌ | ✅ | ❌ |
+| CU-34: Dashboard de Métricas en Tiempo Real | ✅ | ✅ | ✅ | ❌ |
+| **CU-35: Registrar Logs de Seguridad** | ❌ | ❌ | ❌ | ✅ |
+| **CU-36: Auditar Operaciones Críticas** | ❌ | ❌ | ❌ | ✅ |
+| **CU-37: Rastrear Intentos Login Fallidos** | ❌ | ❌ | ❌ | ✅ |
+| **CU-38: Gestionar Rate Limiting** | ❌ | ❌ | ❌ | ✅ |
+| **CU-39: Verificar Integridad Sesiones** | ❌ | ❌ | ❌ | ✅ |
+| **CU-40: Programar Envíos Automáticos** | ✅ | ✅ | ✅ | ❌ |
+| **CU-41: Gestionar Variables Dinámicas** | ❌ | ❌ | ❌ | ✅ |
+| **CU-42: Monitorear Estadísticas Envío** | ✅ | ✅ | ✅ | ❌ |
+| **CU-43: Duplicar Plantillas** | ✅ | ✅ | ✅ | ❌ |
+| **CU-44: Gestionar Cache Sistema** | ❌ | ❌ | ❌ | ✅ |
+| **CU-45: Administrar Sesiones Persistentes** | ❌ | ❌ | ❌ | ✅ |
+| **CU-46: Auditoría Detalles Pagos** | ❌ | ❌ | ❌ | ✅ |
+| **CU-47: Estadísticas Sistema Completas** | ❌ | ❌ | ✅ | ❌ |
+| **CU-48: Reportar Actividad Usuarios** | ❌ | ❌ | ✅ | ❌ |
+| **CU-49: Analizar Efectividad WhatsApp** | ✅ | ✅ | ✅ | ❌ |
 
 ---
 
@@ -1577,34 +1694,34 @@
 - CU-03, CU-04, CU-05: Gestión de pacientes
 - CU-06, CU-07, CU-08: Sistema de citas
 - CU-13: Pagos básicos
-- CU-32, CU-33, CU-34, CU-35, CU-36: Seguridad automática
+- CU-35, CU-36, CU-37, CU-38, CU-39: Seguridad automática
 
 ### **🟡 Prioridad Media (Segunda Fase) - ✅ COMPLETADO**
 - CU-09, CU-10, CU-11, CU-12: Tratamientos completos
 - CU-14, CU-15, CU-16: Sistema de cuotas
 - CU-18, CU-19: Placas dentales básicas
 - CU-26, CU-27: Gestión de usuarios
-- CU-41, CU-42, CU-43: Gestión de datos automática
+- CU-44, CU-45, CU-46: Gestión de datos automática
 
 ### **🟢 Prioridad Baja (Tercera Fase) - ✅ COMPLETADO**
 - CU-22, CU-23, CU-24, CU-25: WhatsApp completo
 - CU-20, CU-21: Gestión avanzada de placas
-- CU-17, CU-30, CU-31: Reportes y estadísticas
+- CU-17, CU-30, CU-31, CU-32, CU-33, CU-34: Reportes y dashboard
 - CU-28, CU-29: Administración avanzada
 
 ### **🚀 Funcionalidades Avanzadas (Cuarta Fase) - ✅ COMPLETADO**
-- CU-37, CU-38, CU-39, CU-40: WhatsApp avanzado
-- CU-44, CU-45, CU-46: Reportes avanzados y análisis
+- CU-40, CU-41, CU-42, CU-43: WhatsApp avanzado
+- CU-47, CU-48, CU-49: Análisis avanzados y métricas empresariales
 
 ---
 
 ## 📊 MÉTRICAS DE CASOS DE USO
 
-- **Total de Casos de Uso:** 46
+- **Total de Casos de Uso:** 49
 - **Por Actor:**
-  - Dentista: 23 casos de uso
-  - Recepcionista: 21 casos de uso  
-  - Administrador: 33 casos de uso
+  - Dentista: 25 casos de uso
+  - Recepcionista: 23 casos de uso  
+  - Administrador: 35 casos de uso
   - Sistema (Automático): 10 casos de uso
 - **Por Módulo:**
   - Autenticación: 2 casos
@@ -1616,7 +1733,7 @@
   - WhatsApp Básico: 4 casos
   - WhatsApp Avanzado: 4 casos
   - Usuarios: 4 casos
-  - Reportes Básicos: 2 casos
+  - **Reportes y Dashboard: 5 casos**
   - Reportes Avanzados: 3 casos
   - Auditoría y Seguridad: 5 casos
   - Gestión de Datos: 3 casos
@@ -1627,22 +1744,29 @@
 
 ### **Dependencias Críticas:**
 - CU-01 (Login) → Todos los casos de usuario
-- CU-32, CU-33, CU-34, CU-35, CU-36 → Casos automáticos de seguridad
+- CU-35, CU-36, CU-37, CU-38, CU-39 → Casos automáticos de seguridad
 - CU-03 (Registrar Paciente) → CU-06 (Agendar Cita)
 - CU-06 (Agendar Cita) → CU-09 (Registrar Tratamiento)
 - CU-09 (Registrar Tratamiento) → CU-13 (Registrar Pago)
 
 ### **Dependencias Funcionales:**
-- CU-22 (Crear Plantilla) → CU-23 (Enviar Mensaje) → CU-37 (Programar Envíos)
-- CU-38 (Variables Dinámicas) → CU-23, CU-37 (Envíos de mensajes)
+- CU-22 (Crear Plantilla) → CU-23 (Enviar Mensaje) → CU-40 (Programar Envíos)
+- CU-41 (Variables Dinámicas) → CU-23, CU-40 (Envíos de mensajes)
 - CU-26 (Crear Usuario) → CU-01 (Iniciar Sesión)
-- CU-41, CU-42, CU-43 → Casos automáticos de gestión de datos
+- CU-44, CU-45, CU-46 → Casos automáticos de gestión de datos
+
+### **Dependencias de Reportes:**
+- CU-30 (Reporte PDF Pacientes) → CU-03, CU-04 (Datos de pacientes)
+- CU-31 (Reporte Financiero) → CU-13, CU-14, CU-15 (Datos de pagos)
+- CU-32 (Reporte Citas) → CU-06, CU-07 (Datos de citas)
+- CU-33 (Reporte Tratamientos) → CU-09, CU-10, CU-11 (Datos clínicos)
+- CU-34 (Dashboard Métricas) → Todos los módulos de negocio
 
 ### **Dependencias de Análisis:**
-- CU-39 (Estadísticas Envío) → CU-23, CU-37 (Envíos realizados)
-- CU-44 (Estadísticas Sistema) → Todos los casos de negocio
-- CU-45 (Actividad Usuarios) → CU-32, CU-33 (Logs de auditoría)
-- CU-46 (Efectividad WhatsApp) → CU-23, CU-37, CU-39 (Datos de mensajería)
+- CU-42 (Estadísticas Envío) → CU-23, CU-40 (Envíos realizados)
+- CU-47 (Estadísticas Sistema) → Todos los casos de negocio
+- CU-48 (Actividad Usuarios) → CU-35, CU-36 (Logs de auditoría)
+- CU-49 (Efectividad WhatsApp) → CU-23, CU-40, CU-42 (Datos de mensajería)
 
 ---
 
@@ -1650,7 +1774,7 @@
 
 ### **Consideraciones de Seguridad:**
 - Todos los casos de uso de usuario requieren autenticación previa
-- Sistema implementa casos de uso automáticos de seguridad (CU-32 a CU-36)
+- Sistema implementa casos de uso automáticos de seguridad (CU-35 a CU-39)
 - Información médica solo accesible por dentistas
 - Operaciones críticas requieren confirmación y auditoría automática
 - Rate limiting implementado para prevenir ataques
@@ -1667,21 +1791,25 @@
 - API RESTful completa para todas las operaciones
 - Validación en frontend y backend
 - Transacciones para operaciones críticas
-- Sistema de cache automático para optimización (CU-41)
-- Sesiones persistentes en base de datos (CU-42)
+- Sistema de cache automático para optimización (CU-44)
+- Sesiones persistentes en base de datos (CU-45)
 - Respaldos automáticos de datos importantes
-- Auditoría completa de transacciones financieras (CU-43)
+- Auditoría completa de transacciones financieras (CU-46)
+- **Generación de reportes PDF con jsPDF integrado (CU-30 a CU-34)**
 
 ### **Consideraciones de Negocio:**
+- **Sistema completo de reportes PDF para gestión administrativa**
+- **Dashboard de métricas en tiempo real para control operativo**
 - Sistema WhatsApp avanzado con automatizaciones y análisis de efectividad
-- Reportes avanzados para toma de decisiones estratégicas
+- Reportes financieros detallados con exportación múltiple formato
 - Sistema de pagos flexible con múltiples modalidades
 - Análisis de ROI de comunicaciones con pacientes
-- Métricas completas del sistema para optimización operativa
+- Métricas empresariales completas para optimización estratégica
 
 ### **Estado de Implementación:**
-- **46 casos de uso completamente implementados**
+- **49 casos de uso completamente implementados**
 - **Todas las fases de priorización completadas**
+- **Sistema completo de reportes PDF y dashboard operativo**
 - **Sistema en nivel de producción enterprise**
 - **Funcionalidades automáticas operando en background**
 
