@@ -60,11 +60,10 @@ RUN apt-get install -y \
 # CONFIGURACIÓN DE PHP
 # ============================================================================
 
-# Instalar extensiones de PHP necesarias para Laravel
+# Instalar extensiones de PHP necesarias para Laravel con MariaDB
 RUN docker-php-ext-configure gd --with-freetype --with-jpeg
 RUN docker-php-ext-install -j$(nproc) \
     pdo_mysql \
-    pdo_sqlite \
     mysqli \
     mbstring \
     zip \
@@ -73,7 +72,9 @@ RUN docker-php-ext-install -j$(nproc) \
     gd \
     xml \
     curl \
-    fileinfo
+    fileinfo \
+    bcmath \
+    intl
 
 # Configurar PHP para desarrollo
 RUN cp /usr/local/etc/php/php.ini-development /usr/local/etc/php/php.ini
@@ -171,8 +172,11 @@ RUN echo '# DentalSync Development Environment' >> ~/.bashrc && \
     echo 'alias test="php artisan test"' >> ~/.bashrc && \
     echo 'alias dev="npm run dev"' >> ~/.bashrc && \
     echo 'alias build="npm run build"' >> ~/.bashrc && \
+    echo 'alias mariadb="mariadb -h database -u dentalsync -ppassword dentalsync"' >> ~/.bashrc && \
+    echo 'alias dbstatus="php artisan migrate:status"' >> ~/.bashrc && \
     echo 'echo "🦷 Bienvenido al entorno de desarrollo de DentalSync!"' >> ~/.bashrc && \
     echo 'echo "📁 Workspace: /workspace"' >> ~/.bashrc && \
+    echo 'echo "🗄️ Base de datos: MariaDB (dentalsync@database:3306)"' >> ~/.bashrc && \
     echo 'echo "🔧 Herramientas disponibles: PHP $(php --version | head -n1 | cut -d" " -f2), Node.js $(node --version), Composer $(composer --version --no-ansi | cut -d" " -f3)"' >> ~/.bashrc
 
 # ============================================================================
@@ -199,11 +203,14 @@ RUN echo '#!/bin/bash' > /home/developer/scripts/setup-project.sh && \
     echo '  echo "📄 Archivo .env creado"' >> /home/developer/scripts/setup-project.sh && \
     echo 'fi' >> /home/developer/scripts/setup-project.sh && \
     echo 'php artisan key:generate --ansi' >> /home/developer/scripts/setup-project.sh && \
-    echo 'if [ ! -f database/database.sqlite ]; then' >> /home/developer/scripts/setup-project.sh && \
-    echo '  touch database/database.sqlite' >> /home/developer/scripts/setup-project.sh && \
-    echo '  echo "🗄️ Base de datos SQLite creada"' >> /home/developer/scripts/setup-project.sh && \
-    echo 'fi' >> /home/developer/scripts/setup-project.sh && \
+    echo 'echo "⏳ Esperando conexión a MariaDB..."' >> /home/developer/scripts/setup-project.sh && \
+    echo 'until php artisan migrate:status > /dev/null 2>&1; do' >> /home/developer/scripts/setup-project.sh && \
+    echo '  echo "🔄 Reintentando conexión a MariaDB..."' >> /home/developer/scripts/setup-project.sh && \
+    echo '  sleep 3' >> /home/developer/scripts/setup-project.sh && \
+    echo 'done' >> /home/developer/scripts/setup-project.sh && \
+    echo 'echo "🗄️ Conexión a MariaDB establecida"' >> /home/developer/scripts/setup-project.sh && \
     echo 'php artisan migrate --force' >> /home/developer/scripts/setup-project.sh && \
+    echo 'php artisan db:seed --force' >> /home/developer/scripts/setup-project.sh && \
     echo 'echo "✅ Proyecto configurado correctamente!"' >> /home/developer/scripts/setup-project.sh && \
     chmod +x /home/developer/scripts/setup-project.sh
 

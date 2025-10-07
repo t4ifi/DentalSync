@@ -1,0 +1,184 @@
+<?xml version="1.0" encoding="UTF-8"?><project name="DentalSync" company="NullDevs" webLink="https://github.com/t4ifi/DentalSync" view-date="2025-03-01" view-index="0" gantt-divider-location="336" resource-divider-location="300" version="3.3.3316" locale="es_ES">
+    <description><![CDATA[Proyecto DentalSync - Sistema de gestión odontológico (cronología corregida: inicio 31/03/2025 - entrega 10/11/2025)]]></description>
+    <view zooming-state="default:8" id="gantt-chart">
+        <field id="tpd3" name="Nombre" width="181" order="0"/>
+        <field id="tpd4" name="Fecha de inicio" width="69" order="1"/>
+        <field id="tpd5" name="Fecha de fin" width="70" order="2"/>
+        <option id="filter.completedTasks" value="false"/>
+        <option id="filter.dueTodayTasks" value="false"/>
+        <option id="filter.overdueTasks" value="false"/>
+        <option id="filter.inProgressTodayTasks" value="false"/>
+    </view>
+    <view id="resource-table">
+        <field id="0" name="Nombre" width="210" order="0"/>
+        <field id="1" name="Función" width="86" order="1"/>
+    </view>
+    <!-- -->
+    <calendars>
+        <day-types>
+            <day-type id="0"/>
+            <day-type id="1"/>
+            <default-week id="1" name="default" sun="1" mon="0" tue="0" wed="0" thu="0" fri="0" sat="1"/>
+            <only-show-weekends value="false"/>
+            <overriden-day-types/>
+            <days/>
+        </day-types>
+    </calendars>
+    <tasks empty-milestones="true">
+        <taskproperties>
+            <taskproperty id="tpd0" name="type" type="default" valuetype="icon"/>
+            <taskproperty id="tpd1" name="priority" type="default" valuetype="icon"/>
+            <taskproperty id="tpd2" name="info" type="default" valuetype="icon"/>
+            <taskproperty id="tpd3" name="name" type="default" valuetype="text"/>
+            <taskproperty id="tpd4" name="begindate" type="default" valuetype="date"/>
+            <taskproperty id="tpd5" name="enddate" type="default" valuetype="date"/>
+            <taskproperty id="tpd6" name="duration" type="default" valuetype="int"/>
+            <taskproperty id="tpd7" name="completion" type="default" valuetype="int"/>
+            <taskproperty id="tpd8" name="coordinator" type="default" valuetype="text"/>
+            <taskproperty id="tpd9" name="predecessorsr" type="default" valuetype="text"/>
+        </taskproperties>
+        <task id="0" uid="t0" name="FASE 1: PLANIFICACIÓN" meeting="false" start="2025-03-31" duration="22" complete="100" expand="true">
+            <task id="1" uid="t1" name="Formación del equipo y definición de roles" meeting="false" start="2025-03-31" duration="3" complete="100" expand="true">
+                <depend id="2" type="2" difference="0" hardness="Strong"/>
+            </task>
+            <task id="2" uid="t2" name="Análisis de requisitos / entrevistas" meeting="false" start="2025-04-03" duration="9" complete="100" expand="true">
+                <depend id="3" type="2" difference="0" hardness="Strong"/>
+            </task>
+            <task id="3" uid="t3" name="Definición de arquitectura y stack" meeting="false" start="2025-04-16" duration="5" complete="100" expand="true">
+                <depend id="4" type="2" difference="0" hardness="Strong"/>
+            </task>
+            <task id="4" uid="t4" name="Planificación de sprints y estimaciones" meeting="false" start="2025-04-23" duration="5" complete="100" expand="true">
+                <depend id="10" type="2" difference="0" hardness="Strong"/>
+            </task>
+        </task>
+        <task id="10" uid="t10" name="FASE 2: CONFIGURACIÓN ENTORNO" meeting="false" start="2025-04-30" duration="11" complete="100" expand="true">
+            <task id="11" uid="t11" name="Config y Eleccion Sistema Operativo" meeting="false" start="2025-04-30" duration="5" complete="100" expand="true">
+                <depend id="12" type="2" difference="0" hardness="Strong"/>
+            </task>
+            <task id="12" uid="t12" name="Instalación Laravel 12 + configuración base" meeting="false" start="2025-05-07" duration="3" complete="100" expand="true">
+                <depend id="13" type="2" difference="0" hardness="Strong"/>
+                <depend id="14" type="2" difference="0" hardness="Strong"/>
+            </task>
+            <task id="13" uid="t13" name="Instalación Vue 3 / Vite / Tailwind" meeting="false" start="2025-05-12" duration="3" complete="100" expand="true">
+                <depend id="20" type="2" difference="0" hardness="Strong"/>
+            </task>
+            <task id="14" uid="t14" name="Configuración MariaDB y migraciones base" meeting="false" start="2025-05-12" duration="3" complete="100" expand="true">
+                <depend id="22" type="2" difference="0" hardness="Strong"/>
+                <depend id="31" type="2" difference="0" hardness="Strong"/>
+            </task>
+        </task>
+        <task id="20" uid="t20" name="FASE 3: DESARROLLO (BACKEND + FRONTEND)" meeting="false" start="2025-05-15" duration="94" complete="100" expand="true">
+            <task id="21" uid="t21" name="BACKEND (padre)" meeting="false" start="2025-05-15" duration="70" complete="100" expand="true">
+                <task id="22" uid="t22" name="Diseño modelo de datos (ER) y migraciones" meeting="false" start="2025-05-15" duration="8" complete="100" expand="true">
+                    <depend id="23" type="2" difference="0" hardness="Strong"/>
+                </task>
+                <task id="23" uid="t23" name="Módulo: Autenticación y autorización" meeting="false" start="2025-05-27" duration="12" complete="100" expand="true">
+                    <depend id="24" type="2" difference="0" hardness="Strong"/>
+                    <depend id="32" type="2" difference="0" hardness="Strong"/>
+                </task>
+                <task id="24" uid="t24" name="Módulo: Pacientes (API, validaciones, historial)" meeting="false" start="2025-06-12" duration="12" complete="100" expand="true">
+                    <depend id="25" type="2" difference="0" hardness="Strong"/>
+                    <depend id="33" type="2" difference="0" hardness="Strong"/>
+                </task>
+                <task id="25" uid="t25" name="Módulo: Citas y agenda (API + lógica conflictos)" meeting="false" start="2025-06-30" duration="12" complete="100" expand="true">
+                    <depend id="26" type="2" difference="0" hardness="Strong"/>
+                    <depend id="34" type="2" difference="0" hardness="Strong"/>
+                </task>
+                <task id="26" uid="t26" name="Módulo: Pagos y facturación (API, cuotas)" meeting="false" start="2025-07-16" duration="10" complete="100" expand="true">
+                    <depend id="27" type="2" difference="0" hardness="Strong"/>
+                    <depend id="35" type="2" difference="0" hardness="Strong"/>
+                </task>
+                <task id="27" uid="t27" name="Módulo: Placas dentales (upload, viewer)" meeting="false" start="2025-07-30" duration="8" complete="100" expand="true">
+                    <depend id="28" type="2" difference="0" hardness="Strong"/>
+                    <depend id="36" type="2" difference="0" hardness="Strong"/>
+                </task>
+                <task id="28" uid="t28" name="Integración WhatsApp (backend endpoints)" meeting="false" start="2025-08-11" duration="8" complete="100" expand="true">
+                    <depend id="37" type="2" difference="0" hardness="Strong"/>
+                    <depend id="40" type="2" difference="0" hardness="Strong"/>
+                </task>
+            </task>
+            <task id="30" uid="t30" name="FRONTEND (padre)" meeting="false" start="2025-05-15" duration="94" complete="100" expand="true">
+                <task id="31" uid="t31" name="Maquetación general y design system" meeting="false" start="2025-05-15" duration="10" complete="100" expand="true">
+                    <depend id="32" type="2" difference="0" hardness="Strong"/>
+                </task>
+                <task id="32" uid="t32" name="Componentes: Auth (Login/Register)" meeting="false" start="2025-06-12" duration="8" complete="100" expand="true">
+                    <depend id="33" type="2" difference="0" hardness="Strong"/>
+                </task>
+                <task id="33" uid="t33" name="Pantallas: Gestión de pacientes" meeting="false" start="2025-06-30" duration="12" complete="100" expand="true">
+                    <depend id="34" type="2" difference="0" hardness="Strong"/>
+                </task>
+                <task id="34" uid="t34" name="Pantallas: Agenda y calendario" meeting="false" start="2025-07-16" duration="15" complete="100" expand="true">
+                    <depend id="35" type="2" difference="0" hardness="Strong"/>
+                </task>
+                <task id="35" uid="t35" name="Pantallas: Pagos y facturación" meeting="false" start="2025-08-06" duration="12" complete="100" expand="true">
+                    <depend id="36" type="2" difference="0" hardness="Strong"/>
+                </task>
+                <task id="36" uid="t36" name="Pantallas: Placas dentales (viewer)" meeting="false" start="2025-08-22" duration="8" complete="100" expand="true">
+                    <depend id="37" type="2" difference="0" hardness="Strong"/>
+                </task>
+                <task id="37" uid="t37" name="Integración frontend con endpoints WhatsApp" meeting="false" start="2025-09-03" duration="8" complete="100" expand="true">
+                    <depend id="38" type="2" difference="0" hardness="Strong"/>
+                </task>
+                <task id="38" uid="t38" name="Pruebas unitarias frontend y ajustes UX" meeting="false" start="2025-09-15" duration="7" complete="100" expand="true">
+                    <depend id="40" type="2" difference="0" hardness="Strong"/>
+                </task>
+            </task>
+        </task>
+        <task id="40" uid="t40" name="FASE 4: INTEGRACIÓN Y TESTING" meeting="false" start="2025-09-25" duration="18" complete="100" expand="true">
+            <task id="41" uid="t41" name="Integración completa (smoke tests)" meeting="false" start="2025-09-25" duration="6" complete="100" expand="true">
+                <depend id="42" type="2" difference="0" hardness="Strong"/>
+            </task>
+            <task id="42" uid="t42" name="Testing funcional y de casos de uso (QA)" meeting="false" start="2025-10-03" duration="8" complete="100" expand="true">
+                <depend id="43" type="2" difference="0" hardness="Strong"/>
+            </task>
+            <task id="43" uid="t43" name="Corrección de bugs críticos y estabilización" meeting="false" start="2025-10-15" duration="4" complete="100" expand="true">
+                <depend id="50" type="2" difference="0" hardness="Strong"/>
+            </task>
+        </task>
+        <task id="50" uid="t50" name="FASE 5: OPTIMIZACIÓN, DOCUMENTACIÓN Y ENTREGA" meeting="false" start="2026-10-23" duration="12" complete="100" expand="true">
+            <task id="51" uid="t51" name="Optimización performance y seguridad" meeting="false" start="2026-10-23" duration="4" complete="100" expand="true">
+                <depend id="52" type="2" difference="0" hardness="Strong"/>
+            </task>
+            <task id="52" uid="t52" name="Documentación técnica y manual de usuario" meeting="false" start="2026-10-29" duration="3" complete="100" expand="true">
+                <depend id="53" type="2" difference="0" hardness="Strong"/>
+            </task>
+            <task id="53" uid="t53" name="Preparación de presentación final / demo" meeting="false" start="2026-11-03" duration="5" complete="100" expand="true">
+                <depend id="54" type="2" difference="0" hardness="Strong"/>
+            </task>
+            <task id="54" uid="t54" name="ENTREGA FINAL (hito)" meeting="true" start="2026-11-10" duration="0" complete="0" expand="true"/>
+        </task>
+    </tasks>
+    <resources>
+        <resource id="0" name="Andrés Núñez" function="Default:0" contacts="andres@nulldevs.com" phone=""/>
+        <resource id="1" name="Lázaro Coronel" function="Default:0" contacts="lazaro@nulldevs.com" phone=""/>
+        <resource id="2" name="Adrián Martínez" function="Default:0" contacts="adrian@nulldevs.com" phone=""/>
+        <resource id="3" name="Florencia Passo" function="Default:0" contacts="florencia@nulldevs.com" phone=""/>
+        <resource id="4" name="Alison Silvera" function="Default:0" contacts="alison@nulldevs.com" phone=""/>
+    </resources>
+    <allocations>
+        <allocation task-id="1" resource-id="0" function="Default:1" responsible="true" load="100.0"/>
+        <allocation task-id="41" resource-id="0" function="Default:1" responsible="true" load="40.0"/>
+        <allocation task-id="51" resource-id="0" function="Default:1" responsible="true" load="60.0"/>
+        <allocation task-id="53" resource-id="0" function="Default:1" responsible="true" load="40.0"/>
+        <allocation task-id="32" resource-id="1" function="Default:1" responsible="true" load="80.0"/>
+        <allocation task-id="33" resource-id="1" function="Default:1" responsible="true" load="80.0"/>
+        <allocation task-id="34" resource-id="1" function="Default:1" responsible="true" load="80.0"/>
+        <allocation task-id="35" resource-id="1" function="Default:1" responsible="true" load="60.0"/>
+        <allocation task-id="36" resource-id="1" function="Default:1" responsible="true" load="60.0"/>
+        <allocation task-id="37" resource-id="1" function="Default:1" responsible="true" load="40.0"/>
+        <allocation task-id="22" resource-id="2" function="Default:1" responsible="true" load="100.0"/>
+        <allocation task-id="23" resource-id="2" function="Default:1" responsible="true" load="100.0"/>
+        <allocation task-id="24" resource-id="2" function="Default:1" responsible="true" load="100.0"/>
+        <allocation task-id="25" resource-id="2" function="Default:1" responsible="true" load="100.0"/>
+        <allocation task-id="26" resource-id="2" function="Default:1" responsible="true" load="100.0"/>
+        <allocation task-id="27" resource-id="2" function="Default:1" responsible="true" load="80.0"/>
+        <allocation task-id="28" resource-id="2" function="Default:1" responsible="true" load="60.0"/>
+        <allocation task-id="31" resource-id="3" function="Default:1" responsible="true" load="100.0"/>
+        <allocation task-id="52" resource-id="3" function="Default:1" responsible="true" load="60.0"/>
+        <allocation task-id="38" resource-id="4" function="Default:1" responsible="true" load="100.0"/>
+        <allocation task-id="42" resource-id="4" function="Default:1" responsible="true" load="100.0"/>
+    </allocations>
+    <vacations/>
+    <previous/>
+    <roles roleset-name="Default"/>
+</project>

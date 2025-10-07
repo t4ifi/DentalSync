@@ -1,59 +1,84 @@
-# 🦷 DentalSync - Guía Completa del Dev Container
+# 🦷 DentalSync - Guía Completa del Entorno Docker
 
-Esta guía te ayudará a configurar y usar el entorno de desarrollo completo de DentalSync usando Docker y VS Code Dev Containers.
+Esta guía te ayudará a configurar y usar el entorno de desarrollo completo de DentalSync usando Docker. Documentación actualizada con procedimientos validados en producción.
 
 ## 📋 Tabla de Contenidos
 
 - [🚀 Inicio Rápido](#-inicio-rápido)
 - [🏗️ Arquitectura del Entorno](#️-arquitectura-del-entorno)
 - [📦 Servicios Incluidos](#-servicios-incluidos)
-- [⚙️ Configuración Detallada](#️-configuración-detallada)
-- [🔧 Scripts Disponibles](#-scripts-disponibles)
-- [💡 Uso con VS Code](#-uso-con-vs-code)
+- [⚙️ Configuración Paso a Paso](#️-configuración-paso-a-paso)
+- [🔧 Scripts y Comandos](#-scripts-y-comandos)
+- [� Creación de Usuarios](#-creación-de-usuarios)
 - [🗄️ Base de Datos](#️-base-de-datos)
 - [🐛 Troubleshooting](#-troubleshooting)
-- [📚 Comandos Útiles](#-comandos-útiles)
+- [📚 Comandos de Referencia](#-comandos-de-referencia)
+- [🔍 Verificación del Sistema](#-verificación-del-sistema)
 
 ---
 
 ## 🚀 Inicio Rápido
 
-### Prerrequisitos
+### ✅ Prerrequisitos
 
 - [Docker](https://www.docker.com/get-started) (versión 20.10+)
 - [Docker Compose](https://docs.docker.com/compose/install/) (versión 2.0+)
-- [VS Code](https://code.visualstudio.com/) con extensión [Dev Containers](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers)
+- Git configurado
+- Puerto 8000 y 3307 disponibles
 
-### Opción 1: Con VS Code (Recomendado)
+### 🐳 Proceso de Configuración Completo
 
-1. **Abrir el proyecto en VS Code:**
+1. **Limpiar entorno Docker existente (si existe):**
    ```bash
-   code /path/to/DentalSync
+   # Detener todos los contenedores relacionados
+   docker stop $(docker ps -aq --filter name=dentalsync) 2>/dev/null
+   
+   # Eliminar contenedores
+   docker rm $(docker ps -aq --filter name=dentalsync) 2>/dev/null
+   
+   # Eliminar volúmenes
+   docker volume prune -f
+   
+   # Limpiar sistema Docker
+   docker system prune -f
    ```
 
-2. **Abrir en Dev Container:**
-   - Presiona `Ctrl+Shift+P` (o `Cmd+Shift+P` en Mac)
-   - Busca "Dev Containers: Reopen in Container"
-   - Selecciona la opción y espera a que se construya el contenedor
-
-3. **¡Listo!** El entorno se configurará automáticamente.
-
-### Opción 2: Con Scripts (Manual)
-
-1. **Iniciar el entorno:**
+2. **Construir e iniciar servicios:**
    ```bash
-   ./Docker/scripts/start-dev.sh
+   cd /path/to/DentalSync
+   docker-compose -f Docker/docker-compose.dev.yml up --build -d
    ```
 
-2. **Entrar al contenedor:**
+3. **Verificar que los contenedores estén ejecutándose:**
    ```bash
+   docker ps
+   # Debe mostrar: dentalsync-dev y dentalsync-mariadb
+   ```
+
+4. **Configurar la aplicación Laravel (dentro del contenedor):**
+   ```bash
+   # Entrar al contenedor
    docker exec -it dentalsync-dev bash
+   
+   # Copiar archivo de configuración
+   cp .env.example .env
+   
+   # Generar clave de aplicación
+   php artisan key:generate
+   
+   # Ejecutar migraciones
+   php artisan migrate
+   
+   # Instalar dependencias de Node.js
+   npm install
+   
+   # Compilar assets
+   npm run build
    ```
 
-3. **Configurar el proyecto (dentro del contenedor):**
-   ```bash
-   /home/developer/scripts/setup-project.sh
-   ```
+5. **Acceder a la aplicación:**
+   - Abrir navegador en: http://localhost:8000
+   - ✅ Deberías ver la interfaz de login de DentalSync
 
 ---
 
@@ -89,53 +114,80 @@ Esta guía te ayudará a configurar y usar el entorno de desarrollo completo de 
 
 ### 🗄️ Base de Datos (dentalsync-mariadb)
 - **Imagen:** MariaDB 11.2
-- **Puerto:** 3307
+- **Puerto:** 3307 (host) → 3306 (contenedor)
 - **Usuario:** `dentalsync` | **Contraseña:** `password`
 - **Base de datos:** `dentalsync`
+- **Host interno:** `database` (para conexiones desde el contenedor app)
+- **Configuración:** UTF8MB4, collation unicode_ci optimizada
 
 ---
 
-## ⚙️ Configuración Detallada
+## ⚙️ Configuración Paso a Paso
 
-### Estructura de Archivos
+### 📁 Estructura de Archivos Docker
 
 ```
 Docker/
-├── Dockerfile.dev              # Imagen de desarrollo
-├── docker-compose.dev.yml      # Orquestación de servicios
+├── Dockerfile.dev              # Imagen PHP 8.2 + Node.js 20
+├── docker-compose.dev.yml      # Orquestación completa
 ├── mariadb/
-│   └── mariadb.cnf            # Configuración de MariaDB
-└── scripts/
-    ├── start-dev.sh           # Inicio rápido
-    ├── stop-dev.sh            # Detener servicios
-    └── dev-tools.sh           # Herramientas de desarrollo
-
-.devcontainer/
-└── devcontainer.json          # Configuración de VS Code
+│   └── mariadb.cnf            # Configuración MariaDB optimizada
+└── scripts/                   # Scripts de automatización
 ```
 
-### Variables de Entorno
+### 🔧 Configuración del Archivo .env
 
-El contenedor utiliza las siguientes variables de entorno:
+**IMPORTANTE:** La configuración `.env` debe ser editada **dentro del contenedor Docker**, no en tu máquina local.
 
 ```bash
-# Aplicación
-APP_ENV=local
-APP_DEBUG=true
-DB_CONNECTION=sqlite  # Por defecto para desarrollo rápido
-DB_DATABASE=/workspace/database/database.sqlite
+# Entrar al contenedor
+docker exec -it dentalsync-dev bash
 
-# Para usar MariaDB (opcional)
-DB_CONNECTION=mysql
-DB_HOST=database
+# Editar .env dentro del contenedor
+nano .env
+```
+
+**Configuración .env requerida:**
+
+```env
+# Aplicación Laravel
+APP_NAME=DentalSync
+APP_ENV=local
+APP_KEY=base64:... # Se genera con php artisan key:generate
+APP_DEBUG=true
+APP_TIMEZONE=UTC
+APP_URL=http://localhost:8000
+
+# Base de datos MariaDB (configuración para Docker)
+DB_CONNECTION=mariadb
+DB_HOST=database                # ⚠️ IMPORTANTE: usar 'database', no 'localhost'
 DB_PORT=3306
 DB_DATABASE=dentalsync
 DB_USERNAME=dentalsync
 DB_PASSWORD=password
 
-# Vite
-VITE_DEV_SERVER_URL=http://localhost:5173
+# Configuración de sesiones
+SESSION_DRIVER=database
+SESSION_LIFETIME=120
+
+# Cache
+CACHE_STORE=database
+
+# Configuración Vite para desarrollo
+VITE_APP_NAME="${APP_NAME}"
 ```
+
+### 🚨 Errores Comunes de Configuración
+
+1. **Error "getaddrinfo for database failed":**
+   - ❌ `DB_HOST=localhost`
+   - ✅ `DB_HOST=database`
+
+2. **Error "Vite manifest not found":**
+   - Ejecutar: `npm run build` dentro del contenedor
+
+3. **Permisos de npm:**
+   - Ejecutar: `npm config set cache /tmp/.npm --global`
 
 ---
 
@@ -229,6 +281,74 @@ build    # npm run build
 
 ---
 
+## 👥 Creación de Usuarios
+
+### 🔐 Estructura de Usuarios
+
+El sistema DentalSync utiliza la tabla `usuarios` con los siguientes campos:
+- `usuario` - Identificador único para login (no email)
+- `nombre` - Nombre completo del usuario
+- `password_hash` - Contraseña encriptada
+- `rol` - Tipo de usuario (`dentista` o `recepcionista`)
+- `activo` - Estado del usuario (true/false)
+
+### 📝 Crear Usuarios Manualmente
+
+**1. Entrar al contenedor y abrir Tinker:**
+```bash
+docker exec -it dentalsync-dev bash
+php artisan tinker
+```
+
+**2. Importar el modelo Usuario:**
+```php
+use App\Models\Usuario;
+```
+
+**3. Crear usuario dentista:**
+```php
+Usuario::create(['usuario' => 'dentista', 'nombre' => 'Dr. Juan Pérez', 'password_hash' => bcrypt('dentista123'), 'rol' => 'dentista', 'activo' => true]);
+```
+
+**4. Crear usuario recepcionista:**
+```php
+Usuario::create(['usuario' => 'recepcionista', 'nombre' => 'María González', 'password_hash' => bcrypt('recepcion123'), 'rol' => 'recepcionista', 'activo' => true]);
+```
+
+**5. Verificar usuarios creados:**
+```php
+Usuario::all();
+```
+
+**6. Salir de Tinker:**
+```php
+exit
+```
+
+### ✅ Usuarios de Prueba por Defecto
+
+Después de ejecutar los comandos anteriores, tendrás estos usuarios disponibles:
+
+| Usuario | Contraseña | Rol | Nombre |
+|---------|------------|-----|--------|
+| `dentista` | `dentista123` | dentista | Dr. Juan Pérez |
+| `recepcionista` | `recepcion123` | recepcionista | María González |
+
+### 🔒 Proceso de Login
+
+1. Ir a http://localhost:8000
+2. Usar uno de los usuarios de arriba
+3. El sistema redirigirá según el rol del usuario
+
+### ⚠️ Notas Importantes sobre Usuarios
+
+- **NO usar etiquetas `<?php` en Tinker** - ya estás en entorno PHP
+- **Campo `usuario`** es obligatorio y único (no email)
+- **Campo `password_hash`** debe usarse en lugar de `password`
+- **Ejecutar comandos uno por uno** en Tinker, no en bloque
+
+---
+
 ## 🗄️ Base de Datos
 
 ### SQLite (Por Defecto)
@@ -272,48 +392,97 @@ Con la extensión Database Client:
 
 ## 🐛 Troubleshooting
 
-### Problemas Comunes
+### 🚨 Problemas Comunes y Soluciones Validadas
 
-#### 1. Docker no inicia
+#### 1. ❌ Error "Vite manifest.json not found"
+
+**Síntomas:** Página blanca o error 500 al acceder a localhost:8000
+
+**Solución:**
 ```bash
-# Verificar que Docker esté ejecutándose
-docker info
+# Entrar al contenedor
+docker exec -it dentalsync-dev bash
 
-# En Linux, añadir usuario al grupo docker
-sudo usermod -aG docker $USER
-# Luego logout/login
+# Compilar assets
+npm run build
+
+# Verificar que el archivo existe
+ls -la public/build/manifest.json
 ```
 
-#### 2. Puerto 8000 ya en uso
+#### 2. ❌ Error "getaddrinfo for database failed"
+
+**Síntomas:** Error de conexión a base de datos en Tinker o migraciones
+
+**Causa:** `.env` configurado incorrectamente
+
+**Solución:**
 ```bash
-# Encontrar el proceso usando el puerto
+# Entrar al contenedor
+docker exec -it dentalsync-dev bash
+
+# Verificar configuración de DB
+php artisan config:show database.connections.mariadb
+
+# Debe mostrar DB_HOST=database, NO localhost
+```
+
+#### 3. ❌ Error "Parse error unexpected '<'" en Tinker
+
+**Causa:** Usar `<?php` en Tinker
+
+**Solución:**
+```php
+# ❌ INCORRECTO
+<?php use App\Models\Usuario;
+
+# ✅ CORRECTO
+use App\Models\Usuario;
+```
+
+#### 4. ❌ Puerto 8000 ya en uso
+
+**Solución:**
+```bash
+# Verificar qué proceso usa el puerto
 lsof -i :8000
 
-# Cambiar el puerto en docker-compose.dev.yml
+# O cambiar puerto en docker-compose.dev.yml
 ports:
-  - "8080:8000"  # Cambiar 8000 por 8080
+  - "8080:8000"
 ```
 
-#### 3. Permisos de archivos (Linux)
+#### 5. ❌ Permisos de npm (EACCES)
+
+**Solución:**
 ```bash
 # Dentro del contenedor
-sudo chown -R developer:developer /workspace
+npm config set cache /tmp/.npm --global
+npm install
 ```
 
-#### 4. Dependencias no se instalan
+#### 6. ❌ Contenedores no inician
+
+**Solución:**
 ```bash
-# Limpiar caché y reinstalar
+# Reset completo
 docker-compose -f Docker/docker-compose.dev.yml down -v
-docker-compose -f Docker/docker-compose.dev.yml up --build
+docker system prune -f
+docker-compose -f Docker/docker-compose.dev.yml up --build -d
 ```
 
-#### 5. MariaDB no arranca
+#### 7. ❌ MariaDB no conecta
+
+**Diagnóstico:**
 ```bash
-# Ver logs del contenedor
+# Verificar que MariaDB esté ejecutándose
+docker ps | grep mariadb
+
+# Ver logs de MariaDB
 docker logs dentalsync-mariadb
 
-# Limpiar volumen de MariaDB
-docker volume rm dentalsync_mariadb_data
+# Probar conexión desde el contenedor
+docker exec -it dentalsync-dev mariadb -h database -u dentalsync -ppassword --skip-ssl -e "SELECT 'OK';"
 ```
 
 ### Logs y Debugging
@@ -334,60 +503,132 @@ docker exec -it dentalsync-dev bash
 
 ---
 
-## 📚 Comandos Útiles
+## 📚 Comandos de Referencia
 
-### Docker
+### 🐳 Docker - Comandos Esenciales
 
 ```bash
-# Construir contenedores
-docker-compose -f Docker/docker-compose.dev.yml build
-
-# Iniciar servicios
-docker-compose -f Docker/docker-compose.dev.yml up -d
-
-# Detener servicios
-docker-compose -f Docker/docker-compose.dev.yml down
-
-# Ver estado de contenedores
-docker-compose -f Docker/docker-compose.dev.yml ps
-
-# Limpiar todo (incluyendo volúmenes)
+# 🚀 INICIO COMPLETO (desde cero)
 docker-compose -f Docker/docker-compose.dev.yml down -v
 docker system prune -f
+docker-compose -f Docker/docker-compose.dev.yml up --build -d
+
+# 📊 MONITOREO
+docker ps                                           # Ver contenedores activos
+docker logs dentalsync-dev                          # Logs de la aplicación
+docker logs dentalsync-mariadb                      # Logs de la base de datos
+docker-compose -f Docker/docker-compose.dev.yml ps # Estado de servicios
+
+# 🔧 MANTENIMIENTO
+docker exec -it dentalsync-dev bash                 # Entrar al contenedor
+docker-compose -f Docker/docker-compose.dev.yml restart  # Reiniciar servicios
+docker-compose -f Docker/docker-compose.dev.yml down     # Detener servicios
 ```
 
-### Laravel (dentro del contenedor)
+### 🦷 Laravel - Comandos Validados
 
 ```bash
-# Configuración inicial
+# 🏗️ CONFIGURACIÓN INICIAL (dentro del contenedor)
 cp .env.example .env
 php artisan key:generate
-touch database/database.sqlite
 php artisan migrate
-php artisan serve --host=0.0.0.0
+php artisan serve --host=0.0.0.0 --port=8000
 
-# Desarrollo
-php artisan migrate:fresh --seed
-php artisan tinker
+# 🔍 DIAGNÓSTICO
+php artisan config:show database.connections.mariadb
+php artisan migrate:status
 php artisan route:list
-php artisan config:clear
+php artisan config:clear && php artisan cache:clear
+
+# 👥 GESTIÓN DE USUARIOS
+php artisan tinker
+# Dentro de Tinker:
+# use App\Models\Usuario;
+# Usuario::all();
+# Usuario::create([...]);
 ```
 
-### Frontend (dentro del contenedor)
+### 🎨 Frontend - Assets y Vite
 
 ```bash
-# Instalación
+# 📦 INSTALACIÓN Y BUILD (dentro del contenedor)
+npm config set cache /tmp/.npm --global  # Evitar errores de permisos
 npm install
+npm run build                             # OBLIGATORIO para producción
 
-# Desarrollo
-npm run dev
+# 🔧 DESARROLLO (opcional)
+npm run dev                               # Desarrollo con hot reload
 
-# Producción
-npm run build
-
-# Actualizar dependencias
-npm update
+# ✅ VERIFICACIÓN
+ls -la public/build/manifest.json         # Verificar que el build funcionó
 ```
+
+### 🗄️ Base de Datos - Comandos Directos
+
+```bash
+# 🔌 CONEXIÓN DIRECTA (desde contenedor app)
+mariadb -h database -u dentalsync -ppassword --skip-ssl dentalsync
+
+# 📊 QUERIES ÚTILES
+mariadb -h database -u dentalsync -ppassword --skip-ssl -e "SHOW DATABASES;"
+mariadb -h database -u dentalsync -ppassword --skip-ssl -e "USE dentalsync; SHOW TABLES;"
+mariadb -h database -u dentalsync -ppassword --skip-ssl -e "USE dentalsync; SELECT * FROM usuarios;"
+
+# 🔄 RESET DE BASE DE DATOS
+php artisan migrate:fresh
+```
+
+---
+
+## 🔍 Verificación del Sistema
+
+### ✅ Lista de Verificación Completa
+
+Ejecuta estos comandos para verificar que todo funciona correctamente:
+
+```bash
+# 1. Verificar contenedores activos
+docker ps | grep dentalsync
+# Debe mostrar: dentalsync-dev y dentalsync-mariadb
+
+# 2. Verificar conectividad de base de datos
+docker exec -it dentalsync-dev mariadb -h database -u dentalsync -ppassword --skip-ssl -e "SELECT 'DB OK';"
+# Debe mostrar: DB OK
+
+# 3. Verificar configuración Laravel
+docker exec -it dentalsync-dev php artisan config:show database.connections.mariadb
+# DB_HOST debe ser 'database'
+
+# 4. Verificar migraciones
+docker exec -it dentalsync-dev php artisan migrate:status
+# Todas las migraciones deben mostrar [1] Ran
+
+# 5. Verificar assets compilados
+docker exec -it dentalsync-dev ls -la public/build/manifest.json
+# Debe existir el archivo
+
+# 6. Verificar aplicación web
+curl -s -o /dev/null -w "%{http_code}" http://localhost:8000
+# Debe retornar: 200
+```
+
+### 🎯 Resultados Esperados
+
+Si todo está configurado correctamente:
+
+- ✅ Contenedores `dentalsync-dev` y `dentalsync-mariadb` ejecutándose
+- ✅ Base de datos conectada y migraciones ejecutadas
+- ✅ Assets de Vite compilados en `public/build/`
+- ✅ Aplicación accesible en http://localhost:8000
+- ✅ Interfaz de login visible y funcional
+- ✅ Usuarios de prueba creados y operativos
+
+### 🚨 Indicadores de Problemas
+
+- ❌ Error 500: Verificar `npm run build` y configuración `.env`
+- ❌ Página blanca: Verificar assets de Vite
+- ❌ Error DB: Verificar `DB_HOST=database` en `.env`
+- ❌ Puerto ocupado: Cambiar puerto en `docker-compose.dev.yml`
 
 ---
 
@@ -439,14 +680,85 @@ services:
 
 ---
 
-## 📞 Soporte
+---
 
-Si encuentras problemas:
+## � Procedimiento de Reset Completo
 
-1. **Revisa los logs:** `docker-compose logs`
-2. **Verifica los servicios:** `docker-compose ps`
-3. **Reinicia limpio:** `./Docker/scripts/stop-dev.sh` y `./Docker/scripts/start-dev.sh`
-4. **Documenta el problema:** Incluye logs y pasos para reproducir
+Si algo sale mal, usa este procedimiento de reset validado:
+
+```bash
+# 1. Detener y limpiar todo
+docker-compose -f Docker/docker-compose.dev.yml down -v
+docker system prune -f
+
+# 2. Construir e iniciar servicios
+docker-compose -f Docker/docker-compose.dev.yml up --build -d
+
+# 3. Configurar aplicación
+docker exec -it dentalsync-dev bash -c "
+cp .env.example .env &&
+php artisan key:generate &&
+php artisan migrate &&
+npm config set cache /tmp/.npm --global &&
+npm install &&
+npm run build
+"
+
+# 4. Crear usuarios de prueba
+docker exec -it dentalsync-dev php artisan tinker --execute="
+use App\Models\Usuario;
+Usuario::create(['usuario' => 'dentista', 'nombre' => 'Dr. Juan Pérez', 'password_hash' => bcrypt('dentista123'), 'rol' => 'dentista', 'activo' => true]);
+Usuario::create(['usuario' => 'recepcionista', 'nombre' => 'María González', 'password_hash' => bcrypt('recepcion123'), 'rol' => 'recepcionista', 'activo' => true]);
+"
+
+# 5. Verificar
+curl -s -o /dev/null -w "%{http_code}" http://localhost:8000
+```
+
+---
+
+## 📞 Soporte y Documentación
+
+### 🆘 Si Encuentras Problemas
+
+1. **Ejecuta diagnóstico completo:**
+   ```bash
+   # Verificar sistema Docker
+   docker info
+   docker ps -a | grep dentalsync
+   
+   # Verificar logs
+   docker logs dentalsync-dev --tail 50
+   docker logs dentalsync-mariadb --tail 50
+   
+   # Verificar aplicación
+   docker exec -it dentalsync-dev php artisan config:show database
+   ```
+
+2. **Revisa la sección [Troubleshooting](#-troubleshooting)**
+
+3. **Usa el procedimiento de reset completo**
+
+4. **Documenta el problema con:**
+   - Comando que causó el error
+   - Mensaje de error completo
+   - Output de `docker ps` y `docker logs`
+   - Sistema operativo y versión de Docker
+
+### 📋 Información del Sistema
+
+- **Laravel:** 12.26.3
+- **PHP:** 8.2.29
+- **Node.js:** 20.19.5
+- **MariaDB:** 11.2
+- **Vue.js:** 3.x
+- **Vite:** Configurado para development y production
+
+### 🔗 Enlaces Útiles
+
+- [Docker Documentation](https://docs.docker.com/)
+- [Laravel Documentation](https://laravel.com/docs)
+- [MariaDB Documentation](https://mariadb.org/documentation/)
 
 ---
 
@@ -454,6 +766,14 @@ Si encuentras problemas:
 
 Este entorno de desarrollo es parte del proyecto DentalSync.
 
+**Documentación actualizada:** 7 de octubre de 2025  
+**Versión:** 2.0 - Procedimientos validados en producción  
+
 ---
 
 **¡Feliz desarrollo! 🦷✨**
+
+### 📝 Changelog de esta Documentación
+
+- **v2.0 (Oct 2025):** Documentación completa con procedimientos validados
+- **v1.0:** Documentación inicial con VS Code Dev Containers

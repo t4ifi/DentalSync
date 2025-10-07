@@ -9,9 +9,8 @@ character-set-server = utf8mb4
 collation-server = utf8mb4_unicode_ci
 
 # Configuraciones específicas de MariaDB
-innodb_file_format = Barracuda
 innodb_file_per_table = 1
-innodb_large_prefix = 1
+innodb_default_row_format = dynamic
 
 # Optimizaciones para desarrollo
 innodb_buffer_pool_size = 256M
