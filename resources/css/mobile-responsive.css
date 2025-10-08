@@ -1,0 +1,318 @@
+/**
+ * Mobile Responsive CSS for DentalSync
+ * Mejoras globales para dispositivos móviles
+ */
+
+/* ==================================================
+   GLOBALES MOBILE-FIRST
+   ================================================== */
+
+/* Touch-friendly sizing */
+@media (hover: none) and (pointer: coarse) {
+  button, input, select, textarea {
+    min-height: 44px;
+  }
+  
+  a, .clickable {
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+  }
+}
+
+/* Prevenir zoom en iOS */
+@media (max-width: 768px) {
+  input, textarea, select {
+    font-size: 16px !important;
+  }
+}
+
+/* ==================================================
+   MODALES RESPONSIVE
+   ================================================== */
+
+@media (max-width: 768px) {
+  /* Modal overlays */
+  .fixed.inset-0 {
+    padding: 10px;
+  }
+  
+  /* Modal content containers */
+  .max-w-4xl, .max-w-3xl, .max-w-2xl, .max-w-xl, .max-w-lg {
+    max-width: calc(100vw - 20px) !important;
+    width: 100% !important;
+  }
+  
+  /* Modal heights */
+  .max-h-\[90vh\] {
+    max-height: calc(100vh - 40px) !important;
+  }
+  
+  /* Modal padding adjustments */
+  .p-6 {
+    padding: 16px !important;
+  }
+  
+  .p-8 {
+    padding: 20px !important;
+  }
+  
+  /* Modal headers */
+  .text-2xl {
+    font-size: 1.5rem !important;
+  }
+  
+  .text-xl {
+    font-size: 1.25rem !important;
+  }
+  
+  /* Modal close buttons */
+  .w-10.h-10 {
+    width: 44px !important;
+    height: 44px !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .fixed.inset-0 {
+    padding: 5px;
+  }
+  
+  .max-h-\[90vh\] {
+    max-height: calc(100vh - 20px) !important;
+  }
+  
+  .p-6 {
+    padding: 12px !important;
+  }
+  
+  .p-8 {
+    padding: 16px !important;
+  }
+  
+  .text-2xl {
+    font-size: 1.3rem !important;
+  }
+  
+  .rounded-2xl {
+    border-radius: 12px !important;
+  }
+}
+
+/* ==================================================
+   TABLAS RESPONSIVE (CARD LAYOUT)
+   ================================================== */
+
+@media (max-width: 768px) {
+  .table-responsive {
+    display: block;
+    width: 100%;
+    overflow-x: visible;
+  }
+  
+  .table-responsive table,
+  .table-responsive thead,
+  .table-responsive tbody,
+  .table-responsive th,
+  .table-responsive td,
+  .table-responsive tr {
+    display: block;
+  }
+  
+  .table-responsive thead tr {
+    position: absolute;
+    top: -9999px;
+    left: -9999px;
+  }
+  
+  .table-responsive tr {
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    margin-bottom: 16px;
+    padding: 16px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  }
+  
+  .table-responsive td {
+    border: none;
+    padding: 8px 0;
+    position: relative;
+    padding-left: 30%;
+    text-align: left;
+  }
+  
+  .table-responsive td:before {
+    content: attr(data-label);
+    position: absolute;
+    left: 0;
+    width: 25%;
+    padding-right: 10px;
+    white-space: nowrap;
+    font-weight: 600;
+    color: #374151;
+    font-size: 0.85rem;
+  }
+}
+
+/* ==================================================
+   FORMULARIOS RESPONSIVE
+   ================================================== */
+
+@media (max-width: 768px) {
+  .form-grid {
+    grid-template-columns: 1fr !important;
+    gap: 16px !important;
+  }
+  
+  .input-group {
+    margin-bottom: 16px;
+  }
+  
+  .form-section {
+    padding: 16px !important;
+    margin-bottom: 16px !important;
+  }
+  
+  .form-buttons {
+    flex-direction: column !important;
+    gap: 12px !important;
+  }
+  
+  .form-buttons button {
+    width: 100% !important;
+    justify-content: center !important;
+  }
+}
+
+/* ==================================================
+   CARDS Y CONTENEDORES
+   ================================================== */
+
+@media (max-width: 768px) {
+  .card-grid {
+    grid-template-columns: 1fr !important;
+    gap: 16px !important;
+  }
+  
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 12px !important;
+  }
+  
+  .content-wrapper {
+    padding: 12px !important;
+  }
+  
+  .section-header {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 12px !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .stats-grid {
+    grid-template-columns: 1fr !important;
+  }
+  
+  .content-wrapper {
+    padding: 8px !important;
+  }
+}
+
+/* ==================================================
+   NAVEGACIÓN Y MENÚS
+   ================================================== */
+
+@media (max-width: 768px) {
+  .nav-horizontal {
+    flex-direction: column !important;
+    gap: 8px !important;
+  }
+  
+  .nav-horizontal button,
+  .nav-horizontal a {
+    width: 100% !important;
+    justify-content: center !important;
+  }
+  
+  .breadcrumb {
+    font-size: 0.85rem !important;
+    flex-wrap: wrap !important;
+  }
+}
+
+/* ==================================================
+   UTILIDADES GENERALES
+   ================================================== */
+
+@media (max-width: 768px) {
+  .mobile-hidden {
+    display: none !important;
+  }
+  
+  .mobile-full-width {
+    width: 100% !important;
+  }
+  
+  .mobile-center {
+    text-align: center !important;
+  }
+  
+  .mobile-stack {
+    flex-direction: column !important;
+  }
+  
+  .mobile-gap-small {
+    gap: 8px !important;
+  }
+}
+
+/* ==================================================
+   SCROLL Y OVERFLOW
+   ================================================== */
+
+@media (max-width: 768px) {
+  .horizontal-scroll {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+  }
+  
+  .horizontal-scroll::-webkit-scrollbar {
+    height: 6px;
+  }
+  
+  .horizontal-scroll::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 6px;
+  }
+  
+  .horizontal-scroll::-webkit-scrollbar-thumb {
+    background: #a259ff;
+    border-radius: 6px;
+  }
+}
+
+/* ==================================================
+   ANIMACIONES OPTIMIZADAS PARA MÓVIL
+   ================================================== */
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .transition-all {
+    transition-duration: 0.2s !important;
+  }
+  
+  .hover\:scale-105:hover {
+    transform: scale(1.02) !important;
+  }
+}

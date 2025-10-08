@@ -1,6 +1,14 @@
 <template>
   <div class="dashboard-container">
-    <aside class="sidebar">
+    <!-- Mobile overlay -->
+    <div v-if="mobileMenuOpen" class="mobile-overlay" @click="toggleMobileMenu"></div>
+    
+    <!-- Mobile menu button -->
+    <button class="mobile-menu-btn" @click="toggleMobileMenu">
+      <i class='bx bx-menu'></i>
+    </button>
+    
+    <aside class="sidebar" :class="{ 'sidebar-mobile-open': mobileMenuOpen }">
       <div class="user-info">
         <div class="avatar-circle">
           <i class='bx bx-user'></i>
@@ -194,11 +202,16 @@ export default {
       cargando: false,
       openMenu: null,
       moduloActivo: 'citas', // Por defecto, mostrar Citas
-      usuarioGuardado: JSON.parse(sessionStorage.getItem('usuario') || '{}')
+      usuarioGuardado: JSON.parse(sessionStorage.getItem('usuario') || '{}'),
+      mobileMenuOpen: false
     };
   },
   mounted() {
     this.syncMenuWithRoute();
+    // Cerrar menú móvil en cambios de ruta
+    this.$watch('$route', () => {
+      this.closeMobileMenu();
+    });
   },
   watch: {
     '$route.path': function() {
@@ -344,6 +357,12 @@ export default {
         this.openMenu = null;
       }
     },
+    toggleMobileMenu() {
+      this.mobileMenuOpen = !this.mobileMenuOpen;
+    },
+    closeMobileMenu() {
+      this.mobileMenuOpen = false;
+    }
   }
 };
 </script>
@@ -497,5 +516,148 @@ export default {
 @keyframes spin {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
+}
+
+/* Mobile Responsive Design */
+.mobile-menu-btn {
+  display: none;
+  position: fixed;
+  top: 20px;
+  left: 20px;
+  z-index: 1001;
+  background: #a259ff;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 12px;
+  font-size: 1.2rem;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(162, 89, 255, 0.3);
+  transition: all 0.3s ease;
+}
+
+.mobile-menu-btn:hover {
+  background: #8a47e6;
+  transform: scale(1.05);
+}
+
+.mobile-overlay {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 999;
+}
+
+@media (max-width: 768px) {
+  .dashboard-container {
+    overflow-x: hidden;
+  }
+  
+  .mobile-menu-btn {
+    display: block;
+  }
+  
+  .mobile-overlay {
+    display: block;
+  }
+  
+  .sidebar {
+    position: fixed;
+    top: 0;
+    left: -270px;
+    height: 100vh;
+    z-index: 1000;
+    transition: left 0.3s ease;
+    width: 270px;
+  }
+  
+  .sidebar-mobile-open {
+    left: 0;
+  }
+  
+  .dashboard-main {
+    margin-left: 0;
+    padding: 80px 15px 20px 15px;
+    width: 100%;
+  }
+  
+  .user-info {
+    padding: 20px 0 12px 0;
+  }
+  
+  .avatar-circle {
+    width: 70px;
+    height: 70px;
+    font-size: 36px;
+  }
+  
+  .user-name {
+    font-size: 1.1rem;
+  }
+  
+  .user-role {
+    font-size: 0.9rem;
+  }
+  
+  .sidebar-link-group {
+    padding: 14px 20px 6px 20px;
+    font-size: 1.1rem;
+  }
+  
+  .sidebar-sublink {
+    padding: 10px 28px;
+    font-size: 1rem;
+  }
+  
+  .logout-btn {
+    position: sticky;
+    bottom: 0;
+    padding: 14px 0;
+  }
+}
+
+@media (max-width: 480px) {
+  .dashboard-main {
+    padding: 70px 10px 15px 10px;
+  }
+  
+  .mobile-menu-btn {
+    top: 15px;
+    left: 15px;
+    padding: 10px;
+  }
+  
+  .sidebar {
+    width: 100vw;
+    left: -100vw;
+  }
+  
+  .sidebar-mobile-open {
+    left: 0;
+  }
+  
+  .user-info {
+    padding: 15px 0 10px 0;
+  }
+  
+  .avatar-circle {
+    width: 60px;
+    height: 60px;
+    font-size: 30px;
+  }
+  
+  .sidebar-link-group {
+    padding: 12px 16px 4px 16px;
+    font-size: 1rem;
+  }
+  
+  .sidebar-sublink {
+    padding: 8px 24px;
+    font-size: 0.95rem;
+  }
 }
 </style>

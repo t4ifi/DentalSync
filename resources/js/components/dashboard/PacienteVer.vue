@@ -206,7 +206,7 @@
               @click="verDetallePaciente(paciente)"
             >
               <!-- Columna Paciente -->
-              <td class="py-4 px-6">
+              <td class="py-4 px-6" data-label="Paciente">
                 <div class="flex items-center">
                   <div class="flex-shrink-0 h-12 w-12">
                     <div class="h-12 w-12 rounded-full bg-gradient-to-r from-[#a259ff] to-[#7c3aed] flex items-center justify-center text-white font-bold text-lg">
@@ -225,7 +225,7 @@
               </td>
 
               <!-- Columna Contacto -->
-              <td class="py-4 px-6">
+              <td class="py-4 px-6" data-label="Contacto">
                 <div class="space-y-1">
                   <div class="flex items-center gap-2">
                     <i class='bx bx-phone text-green-600'></i>
@@ -243,7 +243,7 @@
               </td>
 
               <!-- Columna Información -->
-              <td class="py-4 px-6">
+              <td class="py-4 px-6" data-label="Información">
                 <div class="space-y-1">
                   <div class="flex items-center gap-2">
                     <i class='bx bx-cake text-pink-600'></i>
@@ -264,7 +264,7 @@
               </td>
 
               <!-- Columna Última Visita -->
-              <td class="py-4 px-6">
+              <td class="py-4 px-6" data-label="Última Visita">
                 <div v-if="paciente.ultima_visita" class="space-y-1">
                   <div class="text-sm font-medium text-gray-900">
                     {{ formatearFecha(paciente.ultima_visita) }}
@@ -288,7 +288,7 @@
               </td>
 
               <!-- Columna Acciones -->
-              <td class="py-4 px-6 text-center">
+              <td class="py-4 px-6 text-center" data-label="Acciones">
                 <div class="flex justify-center gap-2">
                   <button 
                     @click.stop="verDetallePaciente(paciente)"
@@ -1054,5 +1054,112 @@ th, td {
 }
 input {
   font-size: 1.1rem;
+}
+
+/* Mobile Responsive Design for Tables */
+@media (max-width: 768px) {
+  /* Convertir tabla a cards en móvil */
+  .overflow-hidden {
+    overflow: visible;
+  }
+  
+  table, thead, tbody, th, td, tr {
+    display: block;
+  }
+  
+  /* Ocultar encabezados de tabla */
+  thead tr {
+    position: absolute;
+    top: -9999px;
+    left: -9999px;
+  }
+  
+  tr {
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    margin-bottom: 16px;
+    padding: 16px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  }
+  
+  td {
+    border: none;
+    padding: 8px 0;
+    position: relative;
+    padding-left: 30%;
+    text-align: left;
+  }
+  
+  td:before {
+    content: attr(data-label);
+    position: absolute;
+    left: 0;
+    width: 25%;
+    padding-right: 10px;
+    white-space: nowrap;
+    font-weight: 600;
+    color: #374151;
+    font-size: 0.85rem;
+  }
+  
+  /* Filtros responsive */
+  .flex.flex-wrap.gap-2 {
+    justify-content: center;
+  }
+  
+  .flex.flex-wrap.gap-2 button {
+    font-size: 0.85rem;
+    padding: 8px 12px;
+  }
+  
+  /* Headers responsive */
+  .text-3xl {
+    font-size: 1.8rem;
+  }
+  
+  .p-6 {
+    padding: 16px;
+  }
+  
+  /* Paginación responsive */
+  .flex.items-center.justify-between {
+    flex-direction: column;
+    gap: 16px;
+  }
+  
+  .flex.gap-2 {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 480px) {
+  tr {
+    padding: 12px;
+    margin-bottom: 12px;
+  }
+  
+  td {
+    padding: 6px 0;
+    padding-left: 35%;
+  }
+  
+  td:before {
+    width: 30%;
+    font-size: 0.8rem;
+  }
+  
+  .text-3xl {
+    font-size: 1.5rem;
+  }
+  
+  .p-6 {
+    padding: 12px;
+  }
+  
+  input {
+    font-size: 16px; /* Evita zoom en iOS */
+  }
 }
 </style>

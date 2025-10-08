@@ -346,9 +346,91 @@ footer {
   color: #888;
   font-size: 0.85rem;
 }
+/* Mobile Optimization */
+@media (max-width: 768px) {
+  .login-bg {
+    padding: 15px;
+  }
+  
+  .login {
+    max-width: 100%;
+    margin: 0;
+    box-shadow: none;
+    border-radius: 0;
+    min-height: 100vh;
+  }
+  
+  .login__content {
+    min-height: 100vh;
+  }
+  
+  .login__forms {
+    padding: 40px 30px;
+    justify-content: center;
+  }
+  
+  .login__title {
+    font-size: 1.8rem;
+    margin-bottom: 2.5rem;
+  }
+  
+  .login__box {
+    margin-bottom: 1.8rem;
+  }
+  
+  .login__input {
+    padding: 16px 16px 16px 50px;
+    font-size: 16px; /* Evita zoom en iOS */
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  }
+  
+  .login__icon {
+    left: 18px;
+    font-size: 1.3rem;
+  }
+  
+  .login__button {
+    padding: 16px;
+    font-size: 1.1rem;
+    border-radius: 12px;
+    margin-top: 10px;
+  }
+  
+  footer {
+    margin-top: 30px;
+    font-size: 0.8rem;
+  }
+}
+
 @media (max-width: 480px) {
   .login__forms {
-    padding: 30px 20px;
+    padding: 25px 20px;
+  }
+  
+  .login__title {
+    font-size: 1.6rem;
+    margin-bottom: 2rem;
+  }
+  
+  .login__input {
+    padding: 18px 18px 18px 52px;
+  }
+  
+  .login__button {
+    padding: 18px;
+    font-size: 1.05rem;
+  }
+}
+
+/* Touch improvements */
+@media (hover: none) and (pointer: coarse) {
+  .login__button {
+    min-height: 48px; /* Mejora para touch */
+  }
+  
+  .login__input {
+    min-height: 48px;
   }
 }
 

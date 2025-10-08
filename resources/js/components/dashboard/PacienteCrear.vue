@@ -635,4 +635,85 @@ input:disabled, textarea:disabled, select:disabled {
   cursor: not-allowed;
   background-color: #f9fafb;
 }
+
+/* Mobile Optimization */
+@media (max-width: 768px) {
+  .min-h-screen {
+    padding: 10px;
+  }
+  
+  .max-w-4xl {
+    margin: 0;
+  }
+  
+  .p-8 {
+    padding: 20px;
+  }
+  
+  .p-6 {
+    padding: 16px;
+  }
+  
+  h1 {
+    font-size: 1.8rem;
+  }
+  
+  .text-3xl {
+    font-size: 1.6rem;
+  }
+  
+  .grid-cols-1 {
+    gap: 20px;
+  }
+  
+  input, textarea, select {
+    font-size: 16px; /* Evita zoom en iOS */
+    min-height: 48px; /* Touch-friendly */
+    padding: 12px 16px;
+  }
+  
+  button {
+    min-height: 48px;
+    font-size: 1rem;
+  }
+  
+  .hidden {
+    display: none !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .p-8 {
+    padding: 15px;
+  }
+  
+  .p-6 {
+    padding: 12px;
+  }
+  
+  h1 {
+    font-size: 1.5rem;
+  }
+  
+  .text-3xl {
+    font-size: 1.4rem;
+  }
+  
+  input, textarea, select {
+    padding: 14px 16px;
+    border-radius: 8px;
+  }
+  
+  .grid {
+    gap: 16px;
+  }
+  
+  .mb-8 {
+    margin-bottom: 24px;
+  }
+  
+  .mb-6 {
+    margin-bottom: 20px;
+  }
+}
 </style>

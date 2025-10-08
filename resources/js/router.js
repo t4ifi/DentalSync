@@ -243,7 +243,7 @@ const routes = [
   },
   {
     path: '/',
-    redirect: '/citas/calendario'
+    redirect: '/login'
   }
 ];
 

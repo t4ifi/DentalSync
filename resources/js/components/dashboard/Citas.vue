@@ -427,6 +427,98 @@ section {
   from { opacity: 0; }
   to { opacity: 1; }
 }
+/* Mobile Responsive Design */
+@media (max-width: 768px) {
+  .grid {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+  
+  .text-3xl {
+    font-size: 1.8rem;
+    margin-bottom: 16px;
+  }
+  
+  .citas-main-bg-mockup {
+    padding: 12px;
+  }
+  
+  /* Lista de citas responsive */
+  .space-y-4 li {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 16px;
+    gap: 12px;
+  }
+  
+  .space-y-4 li > div:first-child {
+    width: 100%;
+  }
+  
+  .space-y-4 li > div:last-child {
+    width: 100%;
+    justify-content: flex-start;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  
+  /* Calendario más pequeño */
+  section:last-child {
+    order: -1; /* Calendario primero en móvil */
+  }
+  
+  .VueCal {
+    height: 300px !important;
+  }
+  
+  /* Botones más touch-friendly */
+  button {
+    min-height: 44px;
+    padding: 10px 16px;
+    font-size: 0.9rem;
+  }
+  
+  /* Modales responsive */
+  .confirm-modal-bg > div {
+    margin: 20px;
+    max-width: calc(100vw - 40px);
+  }
+}
+
+@media (max-width: 480px) {
+  .text-3xl {
+    font-size: 1.5rem;
+  }
+  
+  .citas-main-bg-mockup {
+    padding: 8px;
+  }
+  
+  .space-y-4 li {
+    padding: 12px;
+  }
+  
+  .VueCal {
+    height: 280px !important;
+  }
+  
+  button {
+    font-size: 0.85rem;
+    padding: 8px 12px;
+  }
+  
+  .flex.items-center.gap-3 {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  
+  .w-10.h-10 {
+    width: 2rem;
+    height: 2rem;
+  }
+}
+
 @media (max-width: 900px) {
   .citas-flex.mockup-layout {
     flex-direction: column;
