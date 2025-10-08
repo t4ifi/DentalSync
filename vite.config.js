@@ -11,10 +11,10 @@ export default defineConfig({
         vue(),
     ],
     server: {
-        host: '127.0.0.1', // Usar localhost en lugar de 0.0.0.0
+        host: '127.0.0.1', // Usar localhost
         port: 5173,
         hmr: {
-            host: '127.0.0.1', // Asegurar que HMR también use localhost
+            host: '127.0.0.1', // HMR también usa localhost
         },
     },
     resolve: {
