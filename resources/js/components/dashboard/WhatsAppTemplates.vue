@@ -415,9 +415,10 @@
 
     <!-- Toast de Notificación -->
     <div v-if="notificacion.mostrar" 
-         :class="['fixed top-4 right-4 p-4 rounded-lg shadow-lg z-50 transition-all duration-300',
+         :class="['fixed top-4 right-4 p-4 rounded-lg shadow-lg transition-all duration-300',
                  notificacion.tipo === 'success' ? 'bg-green-500 text-white' : 
-                 notificacion.tipo === 'error' ? 'bg-red-500 text-white' : 'bg-blue-500 text-white']">
+                 notificacion.tipo === 'error' ? 'bg-red-500 text-white' : 'bg-blue-500 text-white']"
+         style="z-index: 1050;">
       <div class="flex items-center">
         <i :class="[notificacion.tipo === 'success' ? 'bx bx-check-circle' : 
                    notificacion.tipo === 'error' ? 'bx bx-error-circle' : 'bx bx-info-circle', 'mr-2']"></i>
@@ -658,29 +659,35 @@ const guardarPlantilla = async () => {
   cargandoFormulario.value = true;
   
   try {
-    await new Promise(resolve => setTimeout(resolve, 1000)); // Simular carga
-    
     if (modalTipo.value === 'crear') {
-      const nuevaPlantilla = {
-        ...formularioPlantilla.value,
-        id: Date.now(),
-        usos: 0,
-        fechaCreacion: new Date().toISOString().split('T')[0]
-      };
+      // Crear nueva plantilla a través de la API
+      const nuevaPlantilla = await whatsAppManager.createTemplate(formularioPlantilla.value);
       plantillas.value.push(nuevaPlantilla);
       mostrarNotificacion('Plantilla creada exitosamente', 'success');
     } else {
+      // Actualizar plantilla existente
+      const plantillaActualizada = await whatsAppManager.updateTemplate(
+        formularioPlantilla.value.id, 
+        formularioPlantilla.value
+      );
       const index = plantillas.value.findIndex(p => p.id === formularioPlantilla.value.id);
       if (index !== -1) {
-        plantillas.value[index] = { ...formularioPlantilla.value };
-        mostrarNotificacion('Plantilla actualizada exitosamente', 'success');
+        plantillas.value[index] = plantillaActualizada;
       }
+      mostrarNotificacion('Plantilla actualizada exitosamente', 'success');
     }
     
     cerrarModal();
   } catch (error) {
     console.error('Error al guardar plantilla:', error);
-    mostrarNotificacion('Error al guardar la plantilla', 'error');
+    
+    // Mostrar error específico si está disponible
+    let mensaje = 'Error al guardar la plantilla';
+    if (error.message) {
+      mensaje = error.message;
+    }
+    
+    mostrarNotificacion(mensaje, 'error');
   } finally {
     cargandoFormulario.value = false;
   }
@@ -737,14 +744,25 @@ const eliminarPlantilla = (plantilla) => {
   menuAbierto.value = null;
 };
 
-const confirmarEliminacion = () => {
-  const index = plantillas.value.findIndex(p => p.id === plantillaAEliminar.value.id);
-  if (index !== -1) {
-    plantillas.value.splice(index, 1);
+const confirmarEliminacion = async () => {
+  try {
+    // Eliminar plantilla a través de la API
+    await whatsAppManager.deleteTemplate(plantillaAEliminar.value.id);
+    
+    // Remover de la lista local
+    const index = plantillas.value.findIndex(p => p.id === plantillaAEliminar.value.id);
+    if (index !== -1) {
+      plantillas.value.splice(index, 1);
+    }
+    
     mostrarNotificacion('Plantilla eliminada exitosamente', 'success');
+  } catch (error) {
+    console.error('Error al eliminar plantilla:', error);
+    mostrarNotificacion('Error al eliminar la plantilla', 'error');
+  } finally {
+    mostrarConfirmacion.value = false;
+    plantillaAEliminar.value = null;
   }
-  mostrarConfirmacion.value = false;
-  plantillaAEliminar.value = null;
 };
 
 const enviarConPlantilla = (plantilla) => {
