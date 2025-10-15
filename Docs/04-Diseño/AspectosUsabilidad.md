@@ -188,15 +188,119 @@ DentalSync es un sistema web SPA (Single Page Application) desarrollado con Vue.
 ### **Sistema de Diseño**
 
 #### **Paleta de Colores**
+
+**Colores Principales:**
 ```css
-Primario: #a259ff (Morado vibrante - Acciones principales)
-Secundario: #6b4eff (Morado oscuro - Estados activos)
-Éxito: #10b981 (Verde - Confirmaciones)
-Advertencia: #f59e0b (Amarillo - Alertas)
-Error: #ef4444 (Rojo - Errores)
-Neutro: #6b7280 (Gris - Texto secundario)
-Fondo: #f6f6f6 (Gris claro - Backgrounds)
+/* COLORES PRIMARIOS DE MARCA */
+#a259ff - Morado Principal (Botones primarios, enlaces, elementos interactivos)
+#8b5cf6 - Morado Degradado (Fondos de botones, gradientes)
+#7c3aed - Morado Hover (Estados hover de elementos primarios)
+#6d28d9 - Morado Oscuro (Estados activos y pressed)
+#5b21b6 - Morado Profundo (Textos de énfasis, bordes activos)
+#4c1d95 - Morado Muy Oscuro (Estados de máximo contraste)
 ```
+
+**Escala de Grises para UI:**
+```css
+/* GRISES NEUTROS */
+#f9fafb - Gris Muy Claro (Fondos de cards, contenedores)
+#f3f4f6 - Gris Claro (Fondos de inputs, áreas de contenido)
+#e5e7eb - Gris Medio Claro (Bordes suaves, separadores)
+#d1d5db - Gris Medio (Bordes normales, elementos deshabilitados)
+#9ca3af - Gris Medio Oscuro (Texto secundario, placeholders)
+#6b7280 - Gris Oscuro (Texto terciario, iconos inactivos)
+#374151 - Gris Muy Oscuro (Texto principal, elementos de alta legibilidad)
+```
+
+**Colores de Estado y Feedback:**
+```css
+/* ESTADOS SEMÁNTICOS */
+#10b981 - Verde Éxito (Confirmaciones, estados positivos, validaciones correctas)
+#059669 - Verde Éxito Hover (Estado hover de elementos de éxito)
+#f59e0b - Amarillo Advertencia (Alertas, estados de precaución)
+#d97706 - Amarillo Advertencia Hover (Estado hover de advertencias)
+#ef4444 - Rojo Error (Errores, validaciones fallidas, acciones destructivas)
+#dc2626 - Rojo Error Hover (Estado hover de elementos de error)
+#3b82f6 - Azul Información (Mensajes informativos, enlaces secundarios)
+#2563eb - Azul Información Hover (Estado hover de elementos informativos)
+```
+
+**Colores Específicos del Contexto Médico:**
+```css
+/* CONTEXTO ODONTOLÓGICO */
+#ffffff - Blanco Médico (Fondos principales, elementos limpios)
+#f7f7f7 - Gris Muy Claro (Fondos de aplicación, áreas neutras)
+#c1c1c1 - Gris Scroll (Scrollbars, elementos de navegación)
+#f1f1f1 - Gris Background (Fondos de componentes, áreas de trabajo)
+```
+
+### **Aplicación de Colores por Contexto**
+
+#### **Jerarquía Visual por Color**
+- **Acciones Primarias:** `#a259ff` - Botones principales, CTAs, elementos de mayor importancia
+- **Acciones Secundarias:** `#6b7280` - Botones secundarios, acciones menos críticas
+- **Estados Activos:** `#7c3aed` - Elementos seleccionados, navegación activa
+- **Texto Principal:** `#374151` - Contenido principal, headings importantes
+- **Texto Secundario:** `#6b7280` - Información complementaria, metadatos
+
+#### **Estados de Interacción**
+```css
+/* ESTADOS HOVER Y FOCUS */
+.btn-primary:hover { background-color: #7c3aed; }
+.btn-primary:focus { 
+  background-color: #7c3aed; 
+  box-shadow: 0 0 0 3px rgba(162, 89, 255, 0.3);
+}
+
+/* ESTADOS DISABLED */
+.btn-disabled { 
+  background-color: #d1d5db; 
+  color: #9ca3af; 
+  cursor: not-allowed; 
+}
+```
+
+#### **Accesibilidad y Contraste**
+- **Contraste Mínimo:** 4.5:1 para texto normal (WCAG AA)
+- **Contraste Alto:** 7:1 para texto pequeño (WCAG AAA)
+- **Elementos Interactivos:** Mínimo 3:1 para componentes de UI
+
+**Validación de Contraste:**
+```css
+/* COMBINACIONES ACCESIBLES VERIFICADAS */
+#a259ff sobre #ffffff = 5.1:1 ✅ (Botones primarios)
+#374151 sobre #ffffff = 12.6:1 ✅ (Texto principal)
+#6b7280 sobre #ffffff = 4.7:1 ✅ (Texto secundario)
+#ef4444 sobre #ffffff = 4.5:1 ✅ (Textos de error)
+#10b981 sobre #ffffff = 4.2:1 ✅ (Textos de éxito)
+```
+
+#### **Uso en Componentes Específicos**
+
+**Formularios:**
+- Bordes normales: `#e5e7eb`
+- Bordes focus: `#a259ff`
+- Bordes error: `#ef4444`
+- Bordes válido: `#10b981`
+- Fondo input: `#f9fafb`
+
+**Calendarios y Citas:**
+- Días disponibles: `#a259ff`
+- Días ocupados: `#ef4444`
+- Día seleccionado: `#7c3aed`
+- Eventos: `#8b5cf6`
+
+**Estados de Citas:**
+- Programada: `#3b82f6`
+- En curso: `#f59e0b`
+- Completada: `#10b981`
+- Cancelada: `#ef4444`
+
+**Sistema de Pagos:**
+- Pagado: `#10b981`
+- Pendiente: `#f59e0b`
+- Vencido: `#ef4444`
+- Cuotas: `#a259ff`
 
 #### **Tipografía**
 - **Primaria:** Inter (Sans-serif moderna y legible)

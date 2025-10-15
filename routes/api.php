@@ -123,3 +123,9 @@ Route::middleware(['auth.api', 'rate.limit:api'])->group(function () {
         ]);
     });
 });
+
+// ========================================
+// RUTAS WEBHOOK WHATSAPP (Sin autenticación para webhooks externos)
+// ========================================
+Route::get('/webhook/whatsapp', [App\Http\Controllers\Api\WhatsappWebhookController::class, 'verify']);
+Route::post('/webhook/whatsapp', [App\Http\Controllers\Api\WhatsappWebhookController::class, 'handle']);

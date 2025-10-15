@@ -6,12 +6,20 @@ use App\Http\Controllers\Controller;
 use App\Models\WhatsappConversacion;
 use App\Models\WhatsappMensaje;
 use App\Models\Paciente;
+use App\Services\WhatsAppService;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Log;
 
 class WhatsappConversacionController extends Controller
 {
+    private WhatsAppService $whatsappService;
+
+    public function __construct(WhatsAppService $whatsappService)
+    {
+        $this->whatsappService = $whatsappService;
+    }
     /**
      * Obtener todas las conversaciones
      */
@@ -94,7 +102,7 @@ class WhatsappConversacionController extends Controller
     public function enviarMensaje(Request $request, WhatsappConversacion $conversacion): JsonResponse
     {
         $validator = Validator::make($request->all(), [
-            'mensaje' => 'required|string|max:1000',
+            'mensaje' => 'required|string|max:4096',
             'tipo' => 'sometimes|in:texto,imagen,documento,audio,video'
         ]);
 
@@ -106,7 +114,52 @@ class WhatsappConversacionController extends Controller
         }
 
         try {
-            // Crear mensaje en la base de datos
+            // Verificar si WhatsApp está configurado
+            if (!$this->whatsappService->isConfigured()) {
+                Log::warning('WhatsApp no configurado, simulando envío');
+                
+                // Modo simulación para desarrollo
+                $mensaje = $conversacion->mensajes()->create([
+                    'contenido' => $request->mensaje,
+                    'es_propio' => true,
+                    'estado' => 'enviado',
+                    'tipo' => $request->tipo ?? 'texto',
+                    'fecha_envio' => now(),
+                    'mensaje_whatsapp_id' => 'sim_' . uniqid(),
+                    'metadata' => json_encode(['simulado' => true])
+                ]);
+
+                $conversacion->actualizarUltimoMensaje($mensaje);
+
+                return response()->json([
+                    'success' => true,
+                    'data' => [
+                        'messageId' => $mensaje->id,
+                        'whatsappId' => $mensaje->mensaje_whatsapp_id,
+                        'estado' => $mensaje->estado,
+                        'timestamp' => $mensaje->fecha_envio->toISOString(),
+                        'simulado' => true
+                    ]
+                ]);
+            }
+
+            // Validar mensaje
+            if (!$this->whatsappService->validateMessage($request->mensaje)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'El mensaje excede la longitud máxima permitida'
+                ], 422);
+            }
+
+            // Validar número de teléfono
+            if (!$this->whatsappService->isValidPhoneNumber($conversacion->telefono)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Número de teléfono inválido'
+                ], 422);
+            }
+
+            // Crear mensaje en estado enviando
             $mensaje = $conversacion->mensajes()->create([
                 'contenido' => $request->mensaje,
                 'es_propio' => true,
@@ -116,42 +169,58 @@ class WhatsappConversacionController extends Controller
                 'metadata' => $request->metadata ?? []
             ]);
 
-            // Actualizar última actividad de la conversación
-            $conversacion->actualizarUltimoMensaje($mensaje);
+            // Enviar via WhatsApp API
+            $whatsappResponse = $this->whatsappService->sendTextMessage(
+                $conversacion->telefono,
+                $request->mensaje
+            );
 
-            // TODO: Aquí integrar con WhatsApp Business API o Baileys
-            // Por ahora simular envío exitoso
+            // Actualizar mensaje con respuesta de WhatsApp
+            $whatsappMessageId = $whatsappResponse['messages'][0]['id'] ?? null;
+            
             $mensaje->update([
                 'estado' => 'enviado',
-                'mensaje_whatsapp_id' => 'sim_' . uniqid()
+                'mensaje_whatsapp_id' => $whatsappMessageId,
+                'metadata' => json_encode(array_merge(
+                    $request->metadata ?? [],
+                    ['whatsapp_response' => $whatsappResponse]
+                ))
             ]);
 
-            // Simular progresión de estados en desarrollo
-            if (config('app.debug')) {
-                // Entregado después de 2 segundos
-                dispatch(function() use ($mensaje) {
-                    sleep(2);
-                    $mensaje->actualizarEstado('entregado');
-                })->afterResponse();
+            // Actualizar conversación
+            $conversacion->actualizarUltimoMensaje($mensaje);
 
-                // Leído después de 5-15 segundos
-                dispatch(function() use ($mensaje) {
-                    sleep(rand(5, 15));
-                    $mensaje->actualizarEstado('leido');
-                })->afterResponse();
-            }
+            Log::info('WhatsApp message sent successfully', [
+                'conversation_id' => $conversacion->id,
+                'message_id' => $mensaje->id,
+                'whatsapp_id' => $whatsappMessageId
+            ]);
 
             return response()->json([
                 'success' => true,
                 'data' => [
                     'messageId' => $mensaje->id,
-                    'whatsappId' => $mensaje->mensaje_whatsapp_id,
+                    'whatsappId' => $whatsappMessageId,
                     'estado' => $mensaje->estado,
                     'timestamp' => $mensaje->fecha_envio->toISOString()
                 ]
             ]);
 
         } catch (\Exception $e) {
+            Log::error('Error sending WhatsApp message', [
+                'conversation_id' => $conversacion->id,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            // Si ya se creó el mensaje, marcarlo como error
+            if (isset($mensaje)) {
+                $mensaje->update([
+                    'estado' => 'error',
+                    'error_mensaje' => $e->getMessage()
+                ]);
+            }
+
             return response()->json([
                 'success' => false,
                 'message' => 'Error al enviar mensaje: ' . $e->getMessage()
