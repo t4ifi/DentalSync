@@ -397,6 +397,28 @@ class CitaController extends Controller
                 'nombre_completo.max' => 'El nombre no puede exceder 255 caracteres'
             ]);
 
+            // Validar conflictos de horarios (15 minutos mínimo entre citas)
+            $fechaCita = new \DateTime($validated['fecha']);
+            $conflictoHorario = $this->verificarConflictoHorario($fechaCita);
+            
+            if ($conflictoHorario) {
+                \Log::warning("Conflicto de horario detectado", [
+                    'fecha_solicitada' => $validated['fecha'],
+                    'cita_conflictiva' => $conflictoHorario,
+                    'timestamp' => now()
+                ]);
+                
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Ya existe una cita programada muy cerca de este horario. Debe haber al menos 15 minutos de diferencia entre citas.',
+                    'conflicto' => [
+                        'fecha_conflictiva' => $conflictoHorario->fecha,
+                        'paciente_conflictivo' => $conflictoHorario->nombre_completo,
+                        'motivo_conflictivo' => $conflictoHorario->motivo
+                    ]
+                ], 422);
+            }
+
             // Buscar o crear paciente por nombre usando consulta directa
             $paciente = DB::table('pacientes')
                 ->where('nombre_completo', $validated['nombre_completo'])
@@ -695,5 +717,68 @@ class CitaController extends Controller
         // No hay usuarios en el sistema
         \Log::error('No se encontraron usuarios en el sistema');
         throw new \Exception('No hay usuarios disponibles en el sistema');
+    }
+
+    /**
+     * Verificar si existe conflicto de horario con citas existentes
+     * 
+     * Este método valida que no existan citas programadas en un rango de 15 minutos
+     * antes o después de la fecha/hora solicitada para evitar solapamientos.
+     * 
+     * @param \DateTime $fechaCita Fecha y hora de la cita a validar
+     * @return mixed|null Retorna los datos de la cita conflictiva o null si no hay conflicto
+     * 
+     * Rango de validación:
+     * - 15 minutos antes de la hora solicitada
+     * - 15 minutos después de la hora solicitada
+     * 
+     * Solo considera citas con estados activos (no canceladas).
+     * 
+     * @since 2.1.0
+     * @author Sistema DentalSync
+     */
+    private function verificarConflictoHorario(\DateTime $fechaCita)
+    {
+        // Calcular rango de 15 minutos antes y después
+        $rangoInicio = (clone $fechaCita)->modify('-15 minutes');
+        $rangoFin = (clone $fechaCita)->modify('+15 minutes');
+        
+        \Log::info("Verificando conflictos de horario", [
+            'fecha_solicitada' => $fechaCita->format('Y-m-d H:i:s'),
+            'rango_inicio' => $rangoInicio->format('Y-m-d H:i:s'),
+            'rango_fin' => $rangoFin->format('Y-m-d H:i:s'),
+            'timestamp' => now()
+        ]);
+        
+        // Buscar citas existentes en el rango de tiempo
+        $citaConflictiva = DB::table('citas')
+            ->leftJoin('pacientes', 'citas.paciente_id', '=', 'pacientes.id')
+            ->select(
+                'citas.id',
+                'citas.fecha',
+                'citas.motivo',
+                'citas.estado',
+                'pacientes.nombre_completo'
+            )
+            ->where('citas.fecha', '>=', $rangoInicio->format('Y-m-d H:i:s'))
+            ->where('citas.fecha', '<=', $rangoFin->format('Y-m-d H:i:s'))
+            ->whereIn('citas.estado', ['pendiente', 'confirmada']) // Solo citas activas
+            ->first();
+        
+        if ($citaConflictiva) {
+            \Log::info("Conflicto de horario encontrado", [
+                'cita_conflictiva_id' => $citaConflictiva->id,
+                'fecha_conflictiva' => $citaConflictiva->fecha,
+                'paciente_conflictivo' => $citaConflictiva->nombre_completo,
+                'timestamp' => now()
+            ]);
+        } else {
+            \Log::info("No se encontraron conflictos de horario", [
+                'fecha_validada' => $fechaCita->format('Y-m-d H:i:s'),
+                'timestamp' => now()
+            ]);
+        }
+        
+        return $citaConflictiva;
     }
 }

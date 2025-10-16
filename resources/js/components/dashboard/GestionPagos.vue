@@ -474,6 +474,48 @@
       <i :class="mensaje.tipo === 'exito' ? 'bx bx-check-circle' : 'bx bx-error-circle'"></i>
       {{ mensaje.texto }}
     </div>
+
+    <!-- Modal de Confirmación de Pago Registrado -->
+    <div v-if="mostrarModalPago" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div class="bg-white rounded-xl p-8 max-w-lg mx-4 shadow-2xl">
+        <div class="text-center">
+          <div class="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-green-100 mb-4">
+            <i class='bx bx-credit-card text-green-600 text-3xl'></i>
+          </div>
+          <h3 class="text-xl font-bold text-gray-900 mb-2">¡Pago Registrado Exitosamente!</h3>
+          <p class="text-gray-600 mb-4">El pago ha sido registrado correctamente en el sistema.</p>
+          
+          <!-- Detalles del pago -->
+          <div class="bg-gray-50 rounded-lg p-4 mb-6 text-sm text-left">
+            <div class="space-y-2">
+              <p><strong class="text-gray-700">Paciente:</strong> {{ pagoRegistrado?.paciente }}</p>
+              <p><strong class="text-gray-700">Tratamiento:</strong> {{ pagoRegistrado?.descripcion }}</p>
+              <p><strong class="text-gray-700">Monto Total:</strong> ${{ pagoRegistrado?.monto_total }}</p>
+              <p><strong class="text-gray-700">Modalidad:</strong> {{ pagoRegistrado?.modalidad_texto }}</p>
+              <p><strong class="text-gray-700">Fecha:</strong> {{ formatearFechaModal(pagoRegistrado?.fecha_pago) }}</p>
+              <p v-if="pagoRegistrado?.total_cuotas"><strong class="text-gray-700">Cuotas:</strong> {{ pagoRegistrado.total_cuotas }} pagos</p>
+            </div>
+          </div>
+          
+          <div class="flex gap-3">
+            <button 
+              @click="cerrarModalPago"
+              class="flex-1 bg-gradient-to-r from-green-500 to-green-600 text-white px-4 py-3 rounded-lg font-semibold hover:from-green-600 hover:to-green-700 transition-all transform hover:scale-105 shadow-lg"
+            >
+              <i class="bx bx-check mr-2"></i>
+              Entendido
+            </button>
+            <button 
+              @click="registrarOtroPago"
+              class="flex-1 bg-gradient-to-r from-blue-500 to-blue-600 text-white px-4 py-3 rounded-lg font-semibold hover:from-blue-600 hover:to-blue-700 transition-all transform hover:scale-105 shadow-lg"
+            >
+              <i class="bx bx-plus mr-2"></i>
+              Registrar Otro
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -512,7 +554,11 @@ export default {
       // Registrar cuota
       pacienteCuota: '',
       pagosPendientes: [],
-      cuotasDetalle: {} // Almacena información detallada de cuotas por pago_id
+      cuotasDetalle: {}, // Almacena información detallada de cuotas por pago_id
+      
+      // Modal de confirmación
+      mostrarModalPago: false,
+      pagoRegistrado: null
     }
   },
   
@@ -571,8 +617,19 @@ export default {
         const response = await axios.post('/api/pagos/registrar', datosLimpios);
         
         if (response.data.success) {
-          this.mostrarMensaje('Pago registrado exitosamente', 'exito');
-          this.limpiarFormulario();
+          // Preparar datos para el modal
+          const pacienteSeleccionado = this.pacientes.find(p => p.id == this.nuevoPago.paciente_id);
+          this.pagoRegistrado = {
+            paciente: pacienteSeleccionado?.nombre_completo || 'Paciente',
+            descripcion: this.nuevoPago.descripcion,
+            monto_total: this.formatearMonto(this.limpiarMonto(this.nuevoPago.monto_total)),
+            modalidad_texto: this.obtenerTextoModalidad(this.nuevoPago.modalidad_pago),
+            fecha_pago: this.nuevoPago.fecha_pago,
+            total_cuotas: this.nuevoPago.total_cuotas || null
+          };
+          
+          // Mostrar modal
+          this.mostrarModalPago = true;
           this.cargarDatos(); // Actualizar resumen
         } else {
           this.mostrarMensaje(response.data.message || 'Error al registrar pago', 'error');
@@ -1199,6 +1256,30 @@ export default {
           email: 'sistema@dentalsync.com'
         };
       }
+    },
+    
+    // Funciones para el modal de confirmación
+    cerrarModalPago() {
+      this.mostrarModalPago = false;
+      this.pagoRegistrado = null;
+      this.limpiarFormulario();
+    },
+    
+    registrarOtroPago() {
+      this.mostrarModalPago = false;
+      this.pagoRegistrado = null;
+      this.limpiarFormulario();
+    },
+    
+    formatearFechaModal(fecha) {
+      if (!fecha) return '';
+      const fechaObj = new Date(fecha);
+      return fechaObj.toLocaleDateString('es-ES', {
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+      });
     }
   }
 }
@@ -1893,5 +1974,35 @@ export default {
   font-style: italic;
   color: #6b7280;
   margin-top: 8px;
+}
+
+/* Modal de confirmación de pago */
+.fixed.inset-0 {
+  backdrop-filter: blur(8px);
+  animation: fadeInBackdrop 0.3s ease-out;
+}
+
+.fixed.inset-0 > div {
+  animation: slideInModal 0.4s ease-out;
+}
+
+@keyframes fadeInBackdrop {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideInModal {
+  from {
+    opacity: 0;
+    transform: scale(0.9) translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
 }
 </style>

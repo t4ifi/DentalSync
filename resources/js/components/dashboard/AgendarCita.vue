@@ -60,6 +60,7 @@
                 class="modern-input" 
                 required 
                 :min="today"
+                @change="cargarCitasDelDia"
               />
             </div>
             
@@ -104,6 +105,30 @@
           </div>
         </div>
 
+        <!-- Panel de Citas del Día Seleccionado -->
+        <div v-if="form.fecha && citasDelDia.length > 0" class="form-section">
+          <div class="section-header">
+            <i class="bx bx-list-ul section-icon"></i>
+            <h3 class="section-title">Citas Programadas para {{ formatearFechaModal(form.fecha) }}</h3>
+          </div>
+          
+          <div class="citas-existentes">
+            <div v-for="cita in citasDelDia" :key="cita.id" class="cita-item">
+              <div class="cita-hora">{{ formatearHoraSola(cita.fecha) }}</div>
+              <div class="cita-info">
+                <div class="cita-paciente">{{ cita.nombre_completo }}</div>
+                <div class="cita-motivo">{{ cita.motivo }}</div>
+              </div>
+              <div :class="getEstadoClase(cita.estado)">{{ capitalize(cita.estado) }}</div>
+            </div>
+          </div>
+          
+          <div class="horario-recomendacion">
+            <i class="bx bx-info-circle"></i>
+            <span>Recuerde dejar al menos 15 minutos entre citas</span>
+          </div>
+        </div>
+
         <!-- Botones de acción -->
         <div class="action-buttons">
           <button type="button" @click="limpiarFormulario" class="btn-secondary">
@@ -118,17 +143,7 @@
         </div>
       </form>
 
-      <!-- Mensajes de estado -->
-      <transition name="fade">
-        <div v-if="exito" class="alert alert-success">
-          <i class="bx bx-check-circle"></i>
-          <div>
-            <h4>¡Cita agendada exitosamente!</h4>
-            <p>La cita ha sido programada correctamente en el sistema.</p>
-          </div>
-        </div>
-      </transition>
-
+      <!-- Mensaje de error -->
       <transition name="fade">
         <div v-if="error" class="alert alert-error">
           <i class="bx bx-error-circle"></i>
@@ -140,18 +155,87 @@
       </transition>
     </div>
 
-    <!-- Información adicional -->
-    <div class="info-panel">
-      <h4 class="info-title">
-        <i class="bx bx-info-circle"></i>
-        Información importante
-      </h4>
-      <ul class="info-list">
-        <li><i class="bx bx-check"></i> Las citas se pueden agendar de lunes a viernes</li>
-        <li><i class="bx bx-check"></i> Horario de atención: 8:00 AM - 6:00 PM</li>
-        <li><i class="bx bx-check"></i> Se recomienda llegar 15 minutos antes</li>
-        <li><i class="bx bx-check"></i> Para cancelar, contactar con 24 horas de anticipación</li>
-      </ul>
+    <!-- Modal de Conflicto de Horario -->
+    <div v-if="mostrarModalConflicto" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div class="bg-white rounded-xl p-8 max-w-lg mx-4 shadow-2xl">
+        <div class="text-center">
+          <div class="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-red-100 mb-4">
+            <i class='bx bx-time text-red-600 text-3xl'></i>
+          </div>
+          <h3 class="text-xl font-bold text-gray-900 mb-2">⚠️ Conflicto de Horario</h3>
+          <p class="text-gray-600 mb-4">{{ conflictoData?.message }}</p>
+          
+          <!-- Detalles de la cita conflictiva -->
+          <div class="bg-red-50 border border-red-200 rounded-lg p-4 mb-6 text-sm text-left">
+            <h4 class="font-semibold text-red-800 mb-2">Cita existente:</h4>
+            <div class="space-y-1 text-red-700">
+              <p><strong>Paciente:</strong> {{ conflictoData?.conflicto?.paciente_conflictivo }}</p>
+              <p><strong>Fecha y Hora:</strong> {{ formatearFechaCompleta(conflictoData?.conflicto?.fecha_conflictiva) }}</p>
+              <p><strong>Motivo:</strong> {{ conflictoData?.conflicto?.motivo_conflictivo }}</p>
+            </div>
+          </div>
+
+          <!-- Sugerencias -->
+          <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6 text-sm text-left">
+            <h4 class="font-semibold text-blue-800 mb-2">💡 Sugerencias:</h4>
+            <ul class="text-blue-700 space-y-1">
+              <li>• Seleccione un horario con al menos 15 minutos de diferencia</li>
+              <li>• Considere agendar antes o después de la cita existente</li>
+              <li>• Revise la disponibilidad en el calendario</li>
+            </ul>
+          </div>
+          
+          <div class="flex gap-3">
+            <button 
+              @click="cerrarModalConflicto"
+              class="flex-1 bg-gradient-to-r from-gray-500 to-gray-600 text-white px-4 py-3 rounded-lg font-semibold hover:from-gray-600 hover:to-gray-700 transition-all transform hover:scale-105 shadow-lg"
+            >
+              <i class="bx bx-edit mr-2"></i>
+              Cambiar Horario
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal de Confirmación de Cita Agendada -->
+    <div v-if="mostrarModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div class="bg-white rounded-xl p-8 max-w-md mx-4 shadow-2xl">
+        <div class="text-center">
+          <div class="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-green-100 mb-4">
+            <i class='bx bx-calendar-check text-green-600 text-3xl'></i>
+          </div>
+          <h3 class="text-xl font-bold text-gray-900 mb-2">¡Cita Agendada Exitosamente!</h3>
+          <p class="text-gray-600 mb-4">La cita ha sido programada correctamente en el sistema.</p>
+          
+          <!-- Detalles de la cita -->
+          <div class="bg-gray-50 rounded-lg p-4 mb-6 text-sm text-left">
+            <div class="space-y-2">
+              <p><strong class="text-gray-700">Paciente:</strong> {{ citaAgendada?.paciente }}</p>
+              <p><strong class="text-gray-700">Fecha:</strong> {{ formatearFechaModal(citaAgendada?.fecha) }}</p>
+              <p><strong class="text-gray-700">Hora:</strong> {{ citaAgendada?.hora }}</p>
+              <p><strong class="text-gray-700">Motivo:</strong> {{ citaAgendada?.motivo }}</p>
+            </div>
+          </div>
+          
+          <div class="flex gap-3">
+            <button 
+              @click="cerrarModal"
+              class="flex-1 bg-gradient-to-r from-green-500 to-green-600 text-white px-4 py-3 rounded-lg font-semibold hover:from-green-600 hover:to-green-700 transition-all transform hover:scale-105 shadow-lg"
+            >
+              <i class="bx bx-check mr-2"></i>
+              Entendido
+            </button>
+            <button 
+              @click="agendarOtraCita"
+              class="flex-1 bg-gradient-to-r from-blue-500 to-blue-600 text-white px-4 py-3 rounded-lg font-semibold hover:from-blue-600 hover:to-blue-700 transition-all transform hover:scale-105 shadow-lg"
+            >
+              <i class="bx bx-plus mr-2"></i>
+              Agendar Otra
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </template>
@@ -171,10 +255,14 @@ const form = ref({
 });
 
 // Estados de la aplicación
-const exito = ref(false);
 const error = ref(false);
 const cargando = ref(false);
 const pacientes = ref([]);
+const mostrarModal = ref(false);
+const citaAgendada = ref(null);
+const mostrarModalConflicto = ref(false);
+const conflictoData = ref(null);
+const citasDelDia = ref([]);
 
 // Fecha de hoy para validación
 const today = computed(() => {
@@ -201,13 +289,59 @@ onMounted(async () => {
   }
 });
 
+// Función para verificar disponibilidad de horario
+async function verificarDisponibilidad(fecha, hora) {
+  try {
+    const fechaCompleta = `${fecha}T${hora}:00`;
+    const response = await axios.get(`/api/citas?fecha=${fecha}`);
+    const citasDelDia = response.data || [];
+    
+    // Convertir la fecha solicitada a objeto Date
+    const fechaSolicitada = new Date(fechaCompleta);
+    
+    // Verificar si hay conflictos con citas existentes
+    for (const cita of citasDelDia) {
+      if (cita.estado === 'cancelada') continue; // Ignorar citas canceladas
+      
+      const fechaCita = new Date(cita.fecha);
+      const diferenciaMinutos = Math.abs(fechaSolicitada - fechaCita) / (1000 * 60);
+      
+      if (diferenciaMinutos < 15) {
+        return {
+          disponible: false,
+          conflicto: {
+            paciente_conflictivo: cita.nombre_completo,
+            fecha_conflictiva: cita.fecha,
+            motivo_conflictivo: cita.motivo
+          }
+        };
+      }
+    }
+    
+    return { disponible: true };
+  } catch (error) {
+    console.error('Error verificando disponibilidad:', error);
+    return { disponible: true }; // En caso de error, permitir el intento
+  }
+}
+
 // Función para agendar cita
 async function agendarCita() {
   if (!isFormValid.value) return;
   
-  exito.value = false;
   error.value = false;
   cargando.value = true;
+  
+  // Verificar disponibilidad antes de enviar
+  const disponibilidad = await verificarDisponibilidad(form.value.fecha, form.value.hora);
+  if (!disponibilidad.disponible) {
+    mostrarErrorConflicto({
+      message: 'Ya existe una cita programada muy cerca de este horario. Debe haber al menos 15 minutos de diferencia entre citas.',
+      conflicto: disponibilidad.conflicto
+    });
+    cargando.value = false;
+    return;
+  }
   
   try {
     const res = await axios.post('/api/citas', {
@@ -217,19 +351,36 @@ async function agendarCita() {
       estado: 'pendiente'
     });
     
-    exito.value = true;
+    // Guardar datos de la cita para mostrar en el modal
+    citaAgendada.value = {
+      paciente: form.value.paciente,
+      fecha: form.value.fecha,
+      hora: form.value.hora,
+      motivo: form.value.motivo.trim()
+    };
+    
+    // Mostrar modal de confirmación
+    mostrarModal.value = true;
     emit('cita-agendada');
-      
-    // Limpiar formulario después de 2 segundos
-    setTimeout(() => {
-      limpiarFormulario();
-      exito.value = false;
-    }, 3000);
     
   } catch (err) {
     console.error('Error al agendar cita:', err);
-    error.value = true;
-    setTimeout(() => error.value = false, 5000);
+    
+    // Manejar diferentes tipos de error
+    if (err.response && err.response.status === 422) {
+      // Error de validación (conflicto de horario)
+      const errorData = err.response.data;
+      if (errorData.conflicto) {
+        // Mostrar información específica del conflicto
+        mostrarErrorConflicto(errorData);
+      } else {
+        error.value = true;
+        setTimeout(() => error.value = false, 5000);
+      }
+    } else {
+      error.value = true;
+      setTimeout(() => error.value = false, 5000);
+    }
   } finally {
     cargando.value = false;
   }
@@ -243,8 +394,99 @@ function limpiarFormulario() {
     hora: '', 
     motivo: '' 
   };
-  exito.value = false;
   error.value = false;
+}
+
+// Funciones para el modal
+function cerrarModal() {
+  mostrarModal.value = false;
+  citaAgendada.value = null;
+  limpiarFormulario();
+}
+
+function agendarOtraCita() {
+  mostrarModal.value = false;
+  citaAgendada.value = null;
+  limpiarFormulario();
+}
+
+// Función para formatear fecha en el modal
+function formatearFechaModal(fecha) {
+  if (!fecha) return '';
+  const fechaObj = new Date(fecha);
+  return fechaObj.toLocaleDateString('es-ES', {
+    weekday: 'long',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
+  });
+}
+
+// Funciones para manejar conflictos de horario
+function mostrarErrorConflicto(errorData) {
+  conflictoData.value = errorData;
+  mostrarModalConflicto.value = true;
+}
+
+function cerrarModalConflicto() {
+  mostrarModalConflicto.value = false;
+  conflictoData.value = null;
+}
+
+function formatearFechaCompleta(fechaISO) {
+  if (!fechaISO) return '';
+  const fecha = new Date(fechaISO);
+  return fecha.toLocaleString('es-ES', {
+    weekday: 'long',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit'
+  });
+}
+
+// Función para cargar citas del día seleccionado
+async function cargarCitasDelDia() {
+  if (!form.value.fecha) {
+    citasDelDia.value = [];
+    return;
+  }
+  
+  try {
+    const response = await axios.get(`/api/citas?fecha=${form.value.fecha}`);
+    citasDelDia.value = (response.data || []).filter(cita => cita.estado !== 'cancelada');
+  } catch (error) {
+    console.error('Error cargando citas del día:', error);
+    citasDelDia.value = [];
+  }
+}
+
+// Función para formatear solo la hora
+function formatearHoraSola(fechaISO) {
+  if (!fechaISO) return '';
+  const fecha = new Date(fechaISO);
+  return fecha.toLocaleTimeString('es-ES', {
+    hour: '2-digit',
+    minute: '2-digit'
+  });
+}
+
+// Función para capitalizar texto
+function capitalize(str) {
+  if (!str) return '';
+  return str.charAt(0).toUpperCase() + str.slice(1);
+}
+
+// Función para obtener clase CSS del estado
+function getEstadoClase(estado) {
+  const clases = {
+    'pendiente': 'estado-pendiente',
+    'confirmada': 'estado-confirmada',
+    'atendida': 'estado-atendida',
+    'cancelada': 'estado-cancelada'
+  };
+  return `estado-badge ${clases[estado] || 'estado-pendiente'}`;
 }
 </script>
 
@@ -255,36 +497,36 @@ function limpiarFormulario() {
 .agendar-cita-container {
   min-height: 100vh;
   background: #f8fafc;
-  padding: 2rem 1rem;
+  padding: 1rem;
 }
 
-/* Header section */
+/* Header section - más compacto */
 .header-section {
   background: rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(20px);
-  border-radius: 20px;
-  margin-bottom: 2rem;
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+  border-radius: 16px;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
 }
 
 .header-content {
   display: flex;
   align-items: center;
-  padding: 2rem;
-  gap: 1.5rem;
+  padding: 1.25rem 1.5rem;
+  gap: 1rem;
 }
 
 .header-icon {
   background: linear-gradient(135deg, #6366f1, #8b5cf6);
   color: white;
-  width: 70px;
-  height: 70px;
-  border-radius: 20px;
+  width: 50px;
+  height: 50px;
+  border-radius: 14px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 2rem;
-  box-shadow: 0 10px 30px rgba(99, 102, 241, 0.3);
+  font-size: 1.5rem;
+  box-shadow: 0 6px 20px rgba(99, 102, 241, 0.25);
 }
 
 .header-text {
@@ -292,10 +534,10 @@ function limpiarFormulario() {
 }
 
 .header-title {
-  font-size: 2.5rem;
-  font-weight: 800;
+  font-size: 1.75rem;
+  font-weight: 700;
   color: #1f2937;
-  margin: 0 0 0.5rem 0;
+  margin: 0 0 0.25rem 0;
   background: linear-gradient(135deg, #6366f1, #8b5cf6);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -303,7 +545,7 @@ function limpiarFormulario() {
 }
 
 .header-subtitle {
-  font-size: 1.1rem;
+  font-size: 0.95rem;
   color: #6b7280;
   margin: 0;
 }
@@ -312,10 +554,10 @@ function limpiarFormulario() {
 .form-container {
   background: rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(20px);
-  border-radius: 24px;
-  padding: 2.5rem;
-  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
-  margin-bottom: 2rem;
+  border-radius: 20px;
+  padding: 2rem;
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+  margin-bottom: 1.5rem;
   max-width: 900px;
   margin-left: auto;
   margin-right: auto;
@@ -324,53 +566,55 @@ function limpiarFormulario() {
 .modern-form {
   display: flex;
   flex-direction: column;
-  gap: 2.5rem;
+  gap: 0;
 }
 
 /* Secciones del formulario */
 .form-section {
   background: #f8fafc;
-  border-radius: 16px;
-  padding: 1.5rem;
-  border: 2px solid #e2e8f0;
+  border-radius: 14px;
+  padding: 1.25rem;
+  border: 1px solid #e2e8f0;
   transition: all 0.3s ease;
+  margin-bottom: 1.5rem;
 }
 
 .form-section:hover {
   border-color: #6366f1;
-  box-shadow: 0 8px 25px rgba(99, 102, 241, 0.1);
+  box-shadow: 0 6px 20px rgba(99, 102, 241, 0.08);
+  transform: translateY(-1px);
 }
 
 .section-header {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
-  margin-bottom: 1.5rem;
-  padding-bottom: 0.75rem;
-  border-bottom: 2px solid #e2e8f0;
+  gap: 0.625rem;
+  margin-bottom: 1.25rem;
+  padding-bottom: 0.625rem;
+  border-bottom: 1px solid #e2e8f0;
 }
 
 .section-icon {
   color: #6366f1;
-  font-size: 1.5rem;
+  font-size: 1.25rem;
 }
 
 .section-title {
-  font-size: 1.25rem;
-  font-weight: 700;
+  font-size: 1.125rem;
+  font-weight: 600;
   color: #1f2937;
   margin: 0;
 }
 
 /* Grupos de inputs */
 .input-group {
-  margin-bottom: 1.5rem;
+  margin-bottom: 1.25rem;
 }
 
 .input-row {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 1.5rem;
+  gap: 1.25rem;
 }
 
 .input-label {
@@ -379,8 +623,8 @@ function limpiarFormulario() {
   gap: 0.5rem;
   font-weight: 600;
   color: #374151;
-  margin-bottom: 0.75rem;
-  font-size: 0.95rem;
+  margin-bottom: 0.625rem;
+  font-size: 0.9rem;
 }
 
 .label-icon {
@@ -391,10 +635,10 @@ function limpiarFormulario() {
 /* Inputs modernos */
 .modern-input, .modern-select, .modern-textarea {
   width: 100%;
-  padding: 1rem 1.25rem;
-  border: 2px solid #e2e8f0;
-  border-radius: 12px;
-  font-size: 1rem;
+  padding: 0.875rem 1rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  font-size: 0.95rem;
   font-weight: 500;
   background: white;
   transition: all 0.3s ease;
@@ -404,8 +648,8 @@ function limpiarFormulario() {
 .modern-input:focus, .modern-select:focus, .modern-textarea:focus {
   outline: none;
   border-color: #6366f1;
-  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
-  transform: translateY(-2px);
+  box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.1);
+  transform: translateY(-1px);
 }
 
 .modern-input:hover, .modern-select:hover, .modern-textarea:hover {
@@ -440,7 +684,7 @@ function limpiarFormulario() {
 
 .modern-textarea {
   resize: vertical;
-  min-height: 120px;
+  min-height: 100px;
   font-family: inherit;
   line-height: 1.5;
 }
@@ -450,8 +694,9 @@ function limpiarFormulario() {
   display: flex;
   gap: 1rem;
   justify-content: flex-end;
-  padding-top: 1rem;
-  border-top: 2px solid #e2e8f0;
+  padding-top: 1.5rem;
+  margin-top: 1rem;
+  border-top: 1px solid #e2e8f0;
 }
 
 .btn-primary, .btn-secondary {
@@ -534,51 +779,138 @@ function limpiarFormulario() {
   opacity: 0.9;
 }
 
-/* Panel de información */
-.info-panel {
-  background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(20px);
-  border-radius: 20px;
-  padding: 2rem;
-  max-width: 900px;
-  margin: 0 auto;
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+/* Modal de confirmación */
+.fixed.inset-0 {
+  backdrop-filter: blur(8px);
+  animation: fadeInBackdrop 0.3s ease-out;
 }
 
-.info-title {
+.fixed.inset-0 > div {
+  animation: slideInModal 0.4s ease-out;
+}
+
+@keyframes fadeInBackdrop {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideInModal {
+  from {
+    opacity: 0;
+    transform: scale(0.9) translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+/* Estilos para el panel de citas del día */
+.citas-existentes {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  max-height: 200px;
+  overflow-y: auto;
+  padding: 0.5rem;
+  background: white;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+}
+
+.cita-item {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
-  font-size: 1.25rem;
+  gap: 1rem;
+  padding: 0.75rem;
+  background: #f8fafc;
+  border-radius: 8px;
+  border-left: 4px solid #6366f1;
+  transition: all 0.2s ease;
+}
+
+.cita-item:hover {
+  background: #f1f5f9;
+  transform: translateX(2px);
+}
+
+.cita-hora {
   font-weight: 700;
-  color: #1f2937;
-  margin-bottom: 1rem;
-}
-
-.info-title i {
   color: #6366f1;
-  font-size: 1.5rem;
+  font-size: 0.9rem;
+  min-width: 60px;
+  text-align: center;
+  background: white;
+  padding: 0.25rem 0.5rem;
+  border-radius: 6px;
+  border: 1px solid #e2e8f0;
 }
 
-.info-list {
-  list-style: none;
-  padding: 0;
-  margin: 0;
+.cita-info {
+  flex: 1;
 }
 
-.info-list li {
+.cita-paciente {
+  font-weight: 600;
+  color: #1f2937;
+  font-size: 0.95rem;
+}
+
+.cita-motivo {
+  color: #6b7280;
+  font-size: 0.85rem;
+  margin-top: 0.25rem;
+}
+
+.estado-badge {
+  padding: 0.25rem 0.75rem;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.estado-pendiente {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.estado-confirmada {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+.estado-atendida {
+  background: #dbeafe;
+  color: #1e40af;
+}
+
+.estado-cancelada {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.horario-recomendacion {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
-  padding: 0.75rem 0;
-  color: #4b5563;
+  gap: 0.5rem;
+  margin-top: 1rem;
+  padding: 0.75rem;
+  background: #eff6ff;
+  border-radius: 8px;
+  color: #1e40af;
+  font-size: 0.85rem;
   font-weight: 500;
 }
 
-.info-list li i {
-  color: #10b981;
-  font-size: 1.1rem;
-  flex-shrink: 0;
+.horario-recomendacion i {
+  color: #3b82f6;
+  font-size: 1rem;
 }
 
 /* Transiciones */
@@ -594,21 +926,25 @@ function limpiarFormulario() {
 /* Responsive */
 @media (max-width: 768px) {
   .agendar-cita-container {
-    padding: 1rem;
+    padding: 0.75rem;
   }
   
   .header-content {
     flex-direction: column;
     text-align: center;
-    padding: 1.5rem;
+    padding: 1rem;
   }
   
   .header-title {
-    font-size: 2rem;
+    font-size: 1.5rem;
+  }
+  
+  .header-subtitle {
+    font-size: 0.875rem;
   }
   
   .form-container {
-    padding: 1.5rem;
+    padding: 1.25rem;
   }
   
   .input-row {
@@ -626,8 +962,20 @@ function limpiarFormulario() {
 }
 
 @media (max-width: 480px) {
+  .agendar-cita-container {
+    padding: 0.5rem;
+  }
+  
+  .header-content {
+    padding: 0.875rem;
+  }
+  
   .header-title {
-    font-size: 1.75rem;
+    font-size: 1.375rem;
+  }
+  
+  .header-subtitle {
+    font-size: 0.8125rem;
   }
   
   .form-container {
