@@ -63,21 +63,27 @@
           class="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow"
         >
           <!-- Vista previa de la imagen -->
-          <div class="h-48 bg-gray-100 flex items-center justify-center">
+          <div class="h-48 bg-gray-100 flex items-center justify-center relative overflow-hidden">
             <img 
               v-if="placa.archivo_url && esImagen(placa.archivo_url)" 
-              :src="placa.archivo_url" 
+              :src="getImageUrl(placa.archivo_url)" 
               :alt="`Placa de ${placa.paciente_nombre}`"
-              class="w-full h-full object-cover cursor-pointer"
+              class="w-full h-full object-cover cursor-pointer hover:scale-105 transition-transform duration-300"
               @click="abrirModal(placa)"
+              @error="handleImageError"
             />
+            <div v-else-if="!placa.archivo_url" class="text-center text-gray-400">
+              <i class='bx bx-image-alt text-6xl mb-2'></i>
+              <p class="text-sm">Sin imagen</p>
+            </div>
             <div v-else class="text-center text-gray-500">
               <i class='bx bxs-file-pdf text-red-500 text-4xl mb-2'></i>
               <p class="text-sm">Archivo PDF</p>
               <button 
                 @click="descargarArchivo(placa)"
-                class="mt-2 text-[#a259ff] hover:text-[#8b47cc] text-sm font-medium"
+                class="mt-2 px-3 py-1 bg-[#a259ff] text-white rounded-md hover:bg-[#8b47cc] text-sm font-medium transition-colors"
               >
+                <i class='bx bx-download mr-1'></i>
                 Descargar
               </button>
             </div>
@@ -138,9 +144,10 @@
             <div>
               <img 
                 v-if="esImagen(placaSeleccionada.archivo_url)"
-                :src="placaSeleccionada.archivo_url" 
+                :src="getImageUrl(placaSeleccionada.archivo_url)" 
                 :alt="`Placa de ${placaSeleccionada.paciente_nombre}`"
-                class="w-full h-auto rounded-lg shadow-md"
+                class="w-full h-auto rounded-lg shadow-md border-2 border-[#a259ff]/20"
+                @error="handleImageError"
               />
               <div v-else class="bg-gray-100 rounded-lg p-8 text-center">
                 <i class='bx bxs-file-pdf text-red-500 text-6xl mb-4'></i>
@@ -149,6 +156,7 @@
                   @click="descargarArchivo(placaSeleccionada)"
                   class="px-4 py-2 bg-[#a259ff] text-white rounded-md hover:bg-[#8b47cc]"
                 >
+                  <i class='bx bx-download mr-2'></i>
                   Descargar PDF
                 </button>
               </div>
@@ -296,6 +304,30 @@ const esImagen = (url) => {
   return ['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(extension)
 }
 
+const getImageUrl = (url) => {
+  if (!url) return ''
+  
+  // Si la URL ya es completa (comienza con http), devolverla tal cual
+  if (url.startsWith('http://') || url.startsWith('https://')) {
+    return url
+  }
+  
+  // Si la URL comienza con /storage, es correcta
+  if (url.startsWith('/storage/')) {
+    return url
+  }
+  
+  // Si no, construir la URL correcta
+  // Asumimos que el backend devuelve la ruta relativa desde storage
+  return url
+}
+
+const handleImageError = (event) => {
+  console.error('Error al cargar imagen:', event.target.src)
+  // Mostrar un placeholder o mensaje de error
+  event.target.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="200" height="200"%3E%3Crect width="200" height="200" fill="%23f3f4f6"/%3E%3Ctext x="50%25" y="50%25" dominant-baseline="middle" text-anchor="middle" font-family="Arial" font-size="14" fill="%239ca3af"%3EImagen no disponible%3C/text%3E%3C/svg%3E'
+}
+
 const abrirModal = (placa) => {
   placaSeleccionada.value = placa
 }
@@ -329,3 +361,65 @@ onMounted(() => {
   fetchPacientes()
 })
 </script>
+
+<style scoped>
+/* Animaciones y efectos visuales */
+.hover\:shadow-xl {
+  transition: box-shadow 0.3s ease;
+}
+
+img {
+  transition: transform 0.3s ease;
+}
+
+.hover\:scale-105:hover {
+  transform: scale(1.05);
+}
+
+/* Loading spinner */
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
+
+/* Efecto de hover en tarjetas */
+.bg-white:hover {
+  transform: translateY(-2px);
+  transition: transform 0.2s ease;
+}
+
+/* Backdrop blur para modales */
+.backdrop-blur-sm {
+  backdrop-filter: blur(4px);
+}
+
+/* Mejoras visuales para botones */
+button {
+  transition: all 0.2s ease;
+}
+
+button:hover {
+  transform: translateY(-1px);
+}
+
+button:active {
+  transform: translateY(0);
+}
+
+/* Sombra suave para imágenes */
+.shadow-md {
+  box-shadow: 0 4px 6px -1px rgba(162, 89, 255, 0.1), 
+              0 2px 4px -1px rgba(162, 89, 255, 0.06);
+}
+
+/* Efecto de borde en hover para imágenes */
+.border-2:hover {
+  border-color: rgba(162, 89, 255, 0.5);
+  box-shadow: 0 0 20px rgba(162, 89, 255, 0.2);
+}
+</style>
