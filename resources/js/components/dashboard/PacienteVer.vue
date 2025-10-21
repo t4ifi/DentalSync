@@ -363,7 +363,10 @@
                 {{ obtenerIniciales(pacienteSeleccionado?.nombre_completo) }}
               </div>
               <div>
-                <h3 class="text-2xl font-bold">� Detalle del Paciente</h3>
+                <h3 class="text-2xl font-bold flex items-center gap-2">
+                  <i class='bx bx-user-circle'></i>
+                  Detalle del Paciente
+                </h3>
                 <p class="text-white/80 text-sm">Información completa y actualizada</p>
               </div>
             </div>
@@ -578,7 +581,8 @@ export default {
       loading.value = true
       error.value = ''
       try {
-        const response = await axios.get('/api/pacientes')
+        // Agregar timestamp para evitar caché del navegador
+        const response = await axios.get(`/api/pacientes?t=${Date.now()}`)
         pacientes.value = response.data.data || response.data || []
       } catch (err) {
         error.value = 'Error al cargar los pacientes: ' + err.message
@@ -764,7 +768,9 @@ export default {
     const formatearFecha = (fecha) => {
       if (!fecha) return 'No registrado'
       try {
-        return new Date(fecha).toLocaleDateString('es-ES', {
+        // Agregar hora para evitar problemas de timezone
+        const fechaConHora = fecha.includes('T') ? fecha : fecha + 'T12:00:00'
+        return new Date(fechaConHora).toLocaleDateString('es-ES', {
           day: '2-digit',
           month: '2-digit',
           year: 'numeric'
@@ -778,9 +784,11 @@ export default {
       if (!ultimaVisita) return 'Nunca'
       try {
         const hoy = new Date()
-        const visita = new Date(ultimaVisita)
+        // Agregar hora para evitar problemas de timezone
+        const fechaConHora = ultimaVisita.includes('T') ? ultimaVisita : ultimaVisita + 'T12:00:00'
+        const visita = new Date(fechaConHora)
         const diffTiempo = Math.abs(hoy - visita)
-        const diffDias = Math.ceil(diffTiempo / (1000 * 60 * 60 * 24))
+        const diffDias = Math.floor(diffTiempo / (1000 * 60 * 60 * 24))
         
         if (diffDias === 0) return 'Hoy'
         if (diffDias === 1) return 'Ayer'
@@ -803,7 +811,9 @@ export default {
       
       try {
         const hoy = new Date()
-        const visita = new Date(ultimaVisita)
+        // Agregar hora para evitar problemas de timezone
+        const fechaConHora = ultimaVisita.includes('T') ? ultimaVisita : ultimaVisita + 'T12:00:00'
+        const visita = new Date(fechaConHora)
         const diffDias = Math.floor((hoy - visita) / (1000 * 60 * 60 * 24))
         
         if (diffDias < 30) {

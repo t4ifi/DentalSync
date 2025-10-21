@@ -258,6 +258,21 @@ class CitaController extends Controller
                         'fecha_atencion' => $updateData['fecha_atendida'],
                         'timestamp' => now()
                     ]);
+                    
+                    // Actualizar la última visita del paciente
+                    DB::table('pacientes')
+                        ->where('id', $citaExistente->paciente_id)
+                        ->update([
+                            'ultima_visita' => now()->toDateString(),
+                            'updated_at' => now()
+                        ]);
+                    
+                    \Log::info('Última visita del paciente actualizada al marcar cita como atendida', [
+                        'paciente_id' => $citaExistente->paciente_id,
+                        'fecha' => now()->toDateString(),
+                        'cita_id' => $id,
+                        'timestamp' => now()
+                    ]);
                 }
             }
             
@@ -474,6 +489,20 @@ class CitaController extends Controller
                 'usuario_id' => $usuarioId,
                 'created_at' => now(),
                 'updated_at' => now(),
+            ]);
+
+            // Actualizar la última visita del paciente
+            DB::table('pacientes')
+                ->where('id', $pacienteId)
+                ->update([
+                    'ultima_visita' => now()->toDateString(),
+                    'updated_at' => now()
+                ]);
+
+            \Log::info('Última visita del paciente actualizada', [
+                'paciente_id' => $pacienteId,
+                'fecha' => now()->toDateString(),
+                'timestamp' => now()
             ]);
 
             // Obtener la cita creada con los datos del paciente y usuario
