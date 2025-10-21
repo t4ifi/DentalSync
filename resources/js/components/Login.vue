@@ -152,6 +152,11 @@ export default {
       setTimeout(() => {
         this.showError = false;
       }, 600);
+      
+      // Ocultar el mensaje de error después de 5 segundos
+      setTimeout(() => {
+        this.error = '';
+      }, 5000);
     },
     
     clearError() {
