@@ -14,7 +14,7 @@
 
     <!-- Selector de Paciente -->
     <div class="selector-section bg-gradient-to-r from-purple-50 to-blue-50 p-6 rounded-xl mb-8">
-      <label class="block mb-3 font-semibold text-lg text-gray-700 flex items-center">
+      <label class="flex mb-3 font-semibold text-lg text-gray-700 items-center">
         <i class='bx bx-search mr-2 text-[#a259ff]'></i>
         Selecciona un paciente para editar:
       </label>
@@ -46,7 +46,7 @@
       <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
         <!-- Nombre Completo -->
         <div class="md:col-span-2">
-          <label class="block mb-2 font-semibold text-lg text-gray-700 flex items-center">
+          <label class="flex mb-2 font-semibold text-lg text-gray-700 items-center">
             <i class='bx bx-user mr-2 text-[#a259ff]'></i>
             Nombre completo *
           </label>
@@ -61,40 +61,28 @@
 
         <!-- Teléfono -->
         <div>
-          <label class="block mb-2 font-semibold text-lg text-gray-700 flex items-center">
+          <label class="flex mb-2 font-semibold text-lg text-gray-700 items-center">
             <i class='bx bx-phone mr-2 text-[#a259ff]'></i>
             Teléfono
           </label>
           <input 
             v-model="pacienteSeleccionado.telefono" 
             type="tel" 
+            pattern="[0-9+\-\s()]*"
             class="w-full border-2 border-gray-300 rounded-xl px-4 py-3 text-lg focus:border-[#a259ff] focus:outline-none focus:ring-2 focus:ring-[#a259ff] transition-colors" 
-            placeholder="Ej: +1 234 567 8900"
+            placeholder="Ej: +598 99 123 456"
+            title="Solo se permiten números, espacios, guiones, paréntesis y el símbolo +"
           />
         </div>
 
         <!-- Fecha de Nacimiento -->
         <div>
-          <label class="block mb-2 font-semibold text-lg text-gray-700 flex items-center">
+          <label class="flex mb-2 font-semibold text-lg text-gray-700 items-center">
             <i class='bx bx-calendar mr-2 text-[#a259ff]'></i>
             Fecha de nacimiento
           </label>
           <input 
             v-model="pacienteSeleccionado.fecha_nacimiento" 
-            type="date" 
-            class="w-full border-2 border-gray-300 rounded-xl px-4 py-3 text-lg focus:border-[#a259ff] focus:outline-none focus:ring-2 focus:ring-[#a259ff] transition-colors"
-            :max="fechaMaxima"
-          />
-        </div>
-
-        <!-- Última Visita -->
-        <div>
-          <label class="block mb-2 font-semibold text-lg text-gray-700 flex items-center">
-            <i class='bx bx-time-five mr-2 text-[#a259ff]'></i>
-            Última visita
-          </label>
-          <input 
-            v-model="pacienteSeleccionado.ultima_visita" 
             type="date" 
             class="w-full border-2 border-gray-300 rounded-xl px-4 py-3 text-lg focus:border-[#a259ff] focus:outline-none focus:ring-2 focus:ring-[#a259ff] transition-colors"
             :max="fechaMaxima"
@@ -229,8 +217,7 @@ async function cargarPaciente() {
     pacienteSeleccionado.value = {
       ...data,
       // Formatear fechas para el input date
-      fecha_nacimiento: data.fecha_nacimiento ? data.fecha_nacimiento.split('T')[0] : '',
-      ultima_visita: data.ultima_visita ? data.ultima_visita.split('T')[0] : ''
+      fecha_nacimiento: data.fecha_nacimiento ? data.fecha_nacimiento.split('T')[0] : ''
     };
   } catch (error) {
     errores.value = ['Error de conexión al cargar paciente'];
@@ -253,8 +240,7 @@ async function editarPaciente() {
     const response = await axios.put(`/api/pacientes/${pacienteSeleccionado.value.id}`, {
       nombre_completo: pacienteSeleccionado.value.nombre_completo,
       telefono: pacienteSeleccionado.value.telefono,
-      fecha_nacimiento: pacienteSeleccionado.value.fecha_nacimiento,
-      ultima_visita: pacienteSeleccionado.value.ultima_visita
+      fecha_nacimiento: pacienteSeleccionado.value.fecha_nacimiento
     });
     
     const data = response.data;
@@ -264,8 +250,7 @@ async function editarPaciente() {
       // Actualizar la información del paciente con la respuesta del servidor
       pacienteSeleccionado.value = {
         ...data.paciente,
-        fecha_nacimiento: data.paciente.fecha_nacimiento ? data.paciente.fecha_nacimiento.split('T')[0] : '',
-        ultima_visita: data.paciente.ultima_visita ? data.paciente.ultima_visita.split('T')[0] : ''
+        fecha_nacimiento: data.paciente.fecha_nacimiento ? data.paciente.fecha_nacimiento.split('T')[0] : ''
       };
       
       // Actualizar también en la lista de pacientes
@@ -282,8 +267,27 @@ async function editarPaciente() {
       }
     }
   } catch (error) {
-    errores.value = ['Error de conexión al guardar cambios'];
-    console.error('Error:', error);
+    console.error('Error al guardar cambios:', error);
+    
+    // Manejar errores de validación del servidor
+    if (error.response && error.response.data) {
+      const errorData = error.response.data;
+      
+      // Si hay errores de validación específicos
+      if (errorData.errors) {
+        errores.value = Object.values(errorData.errors).flat();
+      } else if (errorData.details) {
+        errores.value = Object.values(errorData.details).flat();
+      } else if (errorData.message) {
+        errores.value = [errorData.message];
+      } else {
+        errores.value = ['Error al actualizar paciente'];
+      }
+    } else if (error.message) {
+      errores.value = [error.message];
+    } else {
+      errores.value = ['Error de conexión al guardar cambios'];
+    }
   } finally {
     guardando.value = false;
   }
@@ -299,10 +303,14 @@ function cancelarEdicion() {
 }
 
 /**
- * Cerrar modal de éxito
+ * Cerrar modal de éxito y limpiar formulario
  */
 function cerrarModalExito() {
   mostrarModalExito.value = false;
+  // Limpiar el formulario después de guardar exitosamente
+  pacienteId.value = '';
+  pacienteSeleccionado.value = null;
+  errores.value = [];
 }
 
 /**
