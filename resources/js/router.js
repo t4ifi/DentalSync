@@ -34,47 +34,31 @@ const routes = [
         name: 'CitasAgendar',
         component: AgendarCita,
         meta: { requiresAuth: true }
-      },
+      }
+    ]
+  },
+  {
+    path: '/pacientes',
+    name: 'Pacientes',
+    component: Dashboard,
+    meta: { requiresAuth: true },
+    children: [
       {
-        path: 'ver-pacientes',
+        path: 'ver',
         name: 'PacienteVer',
         component: PacienteVer,
         meta: { requiresAuth: true }
       },
       {
-        path: 'crear-paciente',
+        path: 'crear',
         name: 'PacienteCrear',
         component: PacienteCrear,
         meta: { requiresAuth: true }
       },
       {
-        path: 'editar-pacientes',
-        name: 'PacienteEditarLista',
+        path: 'editar',
+        name: 'PacienteEditar',
         component: PacienteEditar,
-        meta: { requiresAuth: true }
-      },
-      {
-        path: 'editar-paciente',
-        name: 'PacienteEditarIndividual',
-        component: PacienteEditar,
-        meta: { requiresAuth: true }
-      },
-      {
-        path: 'subir-placa',
-        name: 'PlacaSubir',
-        component: PlacaSubir,
-        meta: { requiresAuth: true }
-      },
-      {
-        path: 'ver-placas',
-        name: 'PlacaVer',
-        component: PlacaVer,
-        meta: { requiresAuth: true }
-      },
-      {
-        path: 'eliminar-placa',
-        name: 'PlacaEliminar',
-        component: PlacaEliminar,
         meta: { requiresAuth: true }
       }
     ]

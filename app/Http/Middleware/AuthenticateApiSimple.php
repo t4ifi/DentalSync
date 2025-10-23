@@ -13,22 +13,28 @@ use Symfony\Component\HttpFoundation\Response;
  * ============================================================================
  *
  * Este middleware protege rutas de la API verificando la autenticación del usuario.
- * Permite acceso libre en desarrollo y exige autenticación en producción.
+ * Exige autenticación en todos los ambientes (desarrollo y producción).
  * Soporta autenticación por Bearer Token, sesión personalizada y Auth de Laravel.
  *
  * CARACTERÍSTICAS:
- * - Permite acceso libre en modo desarrollo (APP_ENV=local o APP_DEBUG=true)
- * - En producción, verifica autenticación por:
+ * - ⛔ SIEMPRE exige autenticación (desarrollo y producción)
+ * - Excepción: Rutas de debug específicas en modo debug
+ * - Verifica autenticación por:
  *   - Bearer Token (header Authorization)
  *   - Sesión personalizada (session 'user')
  *   - Auth de Laravel (Auth::check())
  * - Expira sesión tras 1 hora de inactividad
  * - Logging de accesos y denegaciones
  *
+ * SEGURIDAD:
+ * - Previene acceso no autorizado a datos sensibles de pacientes
+ * - Protege información de pagos y tratamientos
+ * - Cumple con normativas de privacidad médica
+ *
  * @package App\Http\Middleware
  * @author DentalSync Development Team
- * @version 2.0
- * @since 2025-09-04
+ * @version 3.0
+ * @since 2025-10-23
  */
 class AuthenticateApiSimple
 {
@@ -41,24 +47,27 @@ class AuthenticateApiSimple
      */
     public function handle(Request $request, Closure $next): Response
     {
-        // Para desarrollo: permitir todas las rutas sin autenticación estricta
-        if (config('app.env') === 'local' || config('app.debug') === true) {
-            \Log::info('🔓 Modo desarrollo: Permitiendo acceso sin autenticación', [
-                'route' => $request->path(),
-                'method' => $request->method(),
-                'env' => config('app.env'),
-                'debug' => config('app.debug')
-            ]);
-            return $next($request);
-        }
+        // Rutas permitidas sin autenticación en desarrollo (solo debug)
+        $debugRoutes = [
+            'api/debug/session',
+        ];
 
-        // En producción: verificar autenticación múltiple
+        // Verificar autenticación
         if ($this->isAuthenticated($request)) {
             return $next($request);
         }
 
+        // Permitir rutas de debug solo en desarrollo
+        if (config('app.debug') === true && in_array($request->path(), $debugRoutes)) {
+            \Log::info('🔍 Ruta de debug permitida sin autenticación', [
+                'route' => $request->path(),
+                'method' => $request->method()
+            ]);
+            return $next($request);
+        }
+
         // No autenticado
-        \Log::warning('Acceso denegado - Sin autenticación válida', [
+        \Log::warning('⛔ Acceso denegado - Sin autenticación válida', [
             'route' => $request->path(),
             'method' => $request->method(),
             'ip' => $request->ip(),
@@ -66,7 +75,8 @@ class AuthenticateApiSimple
         ]);
 
         return response()->json([
-            'error' => 'Autenticación requerida',
+            'error' => 'No autenticado. Por favor inicia sesión.',
+            'message' => 'Autenticación requerida para acceder a este recurso',
             'code' => 'AUTHENTICATION_REQUIRED'
         ], 401);
     }

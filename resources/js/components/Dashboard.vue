@@ -47,17 +47,17 @@
             <i :class="['bx', openMenu==='pacientes' ? 'bx-chevron-up' : 'bx-chevron-down', 'chevron']"></i>
           </div>
           <div v-if="openMenu==='pacientes'" class="sidebar-submenu">
-            <router-link :to="{ path: '/citas/ver-pacientes' }" class="sidebar-sublink" :class="$route.path === '/citas/ver-pacientes' ? 'active-sublink' : ''">
+            <router-link :to="{ path: '/pacientes/ver' }" class="sidebar-sublink" :class="$route.path === '/pacientes/ver' ? 'active-sublink' : ''">
               <i class='bx bx-group'></i>
               <span>Ver Pacientes</span>
             </router-link>
             <!-- Editar Pacientes - Disponible para ambos roles -->
-            <router-link :to="{ path: '/citas/editar-pacientes' }" class="sidebar-sublink" :class="$route.path === '/citas/editar-pacientes' ? 'active-sublink' : ''">
+            <router-link :to="{ path: '/pacientes/editar' }" class="sidebar-sublink" :class="$route.path === '/pacientes/editar' ? 'active-sublink' : ''">
               <i class='bx bx-edit-alt'></i>
               <span>Editar Pacientes</span>
             </router-link>
             <!-- Crear Paciente - Solo para recepcionista -->
-            <router-link v-if="usuarioGuardado?.rol==='recepcionista'" :to="{ path: '/citas/crear-paciente' }" class="sidebar-sublink" :class="$route.path === '/citas/crear-paciente' ? 'active-sublink' : ''">
+            <router-link v-if="usuarioGuardado?.rol==='recepcionista'" :to="{ path: '/pacientes/crear' }" class="sidebar-sublink" :class="$route.path === '/pacientes/crear' ? 'active-sublink' : ''">
               <i class='bx bx-user-plus'></i>
               <span>Registrar Paciente</span>
             </router-link>
@@ -221,14 +221,9 @@ export default {
   computed: {
     activeGroup() {
       const path = this.$route.path;
-      if (path.startsWith('/citas') && !(path.startsWith('/citas/ver-pacientes') || path.startsWith('/citas/editar-pacientes') || path.startsWith('/citas/crear-paciente') || path.startsWith('/citas/editar-paciente'))) {
+      if (path.startsWith('/citas')) {
         return 'citas';
-      } else if (
-        path.startsWith('/citas/ver-pacientes') ||
-        path.startsWith('/citas/editar-pacientes') ||
-        path.startsWith('/citas/crear-paciente') ||
-        path.startsWith('/citas/editar-paciente')
-      ) {
+      } else if (path.startsWith('/pacientes')) {
         return 'pacientes';
       } else if (
         path.startsWith('/tratamientos') ||
@@ -294,20 +289,15 @@ export default {
       const path = this.$route.path;
       
       // Para Citas
-      if (path.startsWith('/citas/calendario') || path.startsWith('/citas/agendar')) {
+      if (path.startsWith('/citas')) {
         if (path === '/citas/calendario' && this.usuarioGuardado?.rol === 'dentista') {
           this.openMenu = null; // Dentista ve calendario directamente
         } else {
           this.openMenu = 'citas';
         }
       } 
-      // Para Pacientes (rutas que empiezan con /citas/ pero son de pacientes)
-      else if (
-        path.startsWith('/citas/ver-pacientes') ||
-        path.startsWith('/citas/editar-pacientes') ||
-        path.startsWith('/citas/crear-paciente') ||
-        path.startsWith('/citas/editar-paciente')
-      ) {
+      // Para Pacientes
+      else if (path.startsWith('/pacientes')) {
         this.openMenu = 'pacientes';
       } 
       // Para Tratamientos
