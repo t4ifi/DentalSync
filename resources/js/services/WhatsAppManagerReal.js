@@ -16,6 +16,31 @@ class WhatsAppManager {
         this.init();
     }
 
+    /**
+     * Obtener token de autenticación del sessionStorage
+     */
+    getAuthToken() {
+        try {
+            const usuario = JSON.parse(sessionStorage.getItem('usuario') || '{}');
+            return usuario.token || '';
+        } catch (error) {
+            console.error('Error obteniendo token:', error);
+            return '';
+        }
+    }
+
+    /**
+     * Obtener headers comunes para peticiones autenticadas
+     */
+    getAuthHeaders() {
+        return {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+            'Authorization': `Bearer ${this.getAuthToken()}`
+        };
+    }
+
     async init() {
         console.log('🚀 WhatsApp Manager iniciado con backend Laravel');
         
@@ -179,14 +204,24 @@ class WhatsAppManager {
         try {
             const response = await fetch(`${this.apiUrl}/plantillas`, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
-                },
+                headers: this.getAuthHeaders(),
                 body: JSON.stringify(plantilla)
             });
 
+            // Verificar si la respuesta es JSON
+            const contentType = response.headers.get('content-type');
+            if (!contentType || !contentType.includes('application/json')) {
+                throw new Error('La respuesta del servidor no es JSON válido');
+            }
+
             const data = await response.json();
+            
+            if (!response.ok) {
+                if (response.status === 401) {
+                    throw new Error('Autenticación requerida. Por favor, inicia sesión nuevamente');
+                }
+                throw new Error(data.message || data.error || 'Error al crear plantilla');
+            }
             
             if (data.success) {
                 return data.data;
@@ -206,14 +241,24 @@ class WhatsAppManager {
         try {
             const response = await fetch(`${this.apiUrl}/plantillas/${id}`, {
                 method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
-                },
+                headers: this.getAuthHeaders(),
                 body: JSON.stringify(plantilla)
             });
 
+            // Verificar si la respuesta es JSON
+            const contentType = response.headers.get('content-type');
+            if (!contentType || !contentType.includes('application/json')) {
+                throw new Error('La respuesta del servidor no es JSON válido');
+            }
+
             const data = await response.json();
+            
+            if (!response.ok) {
+                if (response.status === 401) {
+                    throw new Error('Autenticación requerida. Por favor, inicia sesión nuevamente');
+                }
+                throw new Error(data.message || data.error || 'Error al actualizar plantilla');
+            }
             
             if (data.success) {
                 return data.data;
@@ -233,12 +278,23 @@ class WhatsAppManager {
         try {
             const response = await fetch(`${this.apiUrl}/plantillas/${id}`, {
                 method: 'DELETE',
-                headers: {
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
-                }
+                headers: this.getAuthHeaders()
             });
 
+            // Verificar si la respuesta es JSON
+            const contentType = response.headers.get('content-type');
+            if (!contentType || !contentType.includes('application/json')) {
+                throw new Error('La respuesta del servidor no es JSON válido');
+            }
+
             const data = await response.json();
+            
+            if (!response.ok) {
+                if (response.status === 401) {
+                    throw new Error('Autenticación requerida. Por favor, inicia sesión nuevamente');
+                }
+                throw new Error(data.message || data.error || 'Error al eliminar plantilla');
+            }
             
             if (data.success) {
                 return true;

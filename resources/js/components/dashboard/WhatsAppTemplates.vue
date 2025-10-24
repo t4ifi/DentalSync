@@ -116,15 +116,19 @@
                   </span>
                 </div>
               </div>
-              <div class="ml-3">
+              <div class="ml-3 relative">
                 <button 
-                  @click="toggleMenu(plantilla.id)"
+                  @click.stop="toggleMenu(plantilla.id)"
                   class="p-2 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100 transition-colors"
                 >
-                  <i class='bx bx-dots-vertical-rounded'></i>
+                  <i class='bx bx-dots-vertical-rounded text-xl'></i>
                 </button>
                 <!-- Menú desplegable -->
-                <div v-if="menuAbierto === plantilla.id" class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-10">
+                <div 
+                  v-if="menuAbierto === plantilla.id" 
+                  class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-xl border border-gray-200 z-50"
+                  @click.stop
+                >
                   <button 
                     @click="abrirModal('editar', plantilla)"
                     class="w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-t-lg transition-colors flex items-center"
@@ -429,7 +433,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, nextTick } from 'vue';
+import { ref, computed, onMounted, onBeforeUnmount, nextTick } from 'vue';
 import whatsAppManager from '../../services/WhatsAppManagerReal.js';
 
 // Estados reactivos
@@ -535,7 +539,12 @@ const vistaPreviaFormulario = computed(() => {
 const cargarPlantillas = async () => {
   try {
     const data = await whatsAppManager.getTemplates();
-    plantillas.value = data;
+    // Mapear las plantillas del backend al formato esperado por el frontend
+    plantillas.value = data.map(plantilla => ({
+      ...plantilla,
+      fechaCreacion: plantilla.created_at || plantilla.fechaCreacion || new Date().toISOString(),
+      usos: plantilla.usos || plantilla.veces_usada || 0
+    }));
   } catch (error) {
     console.error('Error cargando plantillas:', error);
     // Fallback a datos simulados en caso de error
@@ -601,7 +610,27 @@ const getVariables = (contenido) => {
 };
 
 const formatearFecha = (fecha) => {
-  return new Date(fecha).toLocaleDateString('es-ES');
+  if (!fecha) {
+    return 'Fecha no disponible';
+  }
+  
+  try {
+    // Si la fecha no tiene hora, agregar T12:00:00 para evitar problemas de timezone
+    let fechaStr = fecha;
+    if (typeof fecha === 'string' && !fecha.includes('T')) {
+      fechaStr = fecha + 'T12:00:00';
+    }
+    
+    const date = new Date(fechaStr);
+    // Verificar si la fecha es válida
+    if (isNaN(date.getTime())) {
+      return 'Fecha inválida';
+    }
+    return date.toLocaleDateString('es-ES');
+  } catch (error) {
+    console.error('Error formateando fecha:', error);
+    return 'Fecha inválida';
+  }
 };
 
 // Gestión de modal
@@ -662,7 +691,12 @@ const guardarPlantilla = async () => {
     if (modalTipo.value === 'crear') {
       // Crear nueva plantilla a través de la API
       const nuevaPlantilla = await whatsAppManager.createTemplate(formularioPlantilla.value);
-      plantillas.value.push(nuevaPlantilla);
+      // Mapear campos del backend al formato del frontend
+      plantillas.value.push({
+        ...nuevaPlantilla,
+        fechaCreacion: nuevaPlantilla.created_at || nuevaPlantilla.fechaCreacion || new Date().toISOString(),
+        usos: nuevaPlantilla.usos || nuevaPlantilla.veces_usada || 0
+      });
       mostrarNotificacion('Plantilla creada exitosamente', 'success');
     } else {
       // Actualizar plantilla existente
@@ -672,7 +706,12 @@ const guardarPlantilla = async () => {
       );
       const index = plantillas.value.findIndex(p => p.id === formularioPlantilla.value.id);
       if (index !== -1) {
-        plantillas.value[index] = plantillaActualizada;
+        // Mapear campos del backend al formato del frontend
+        plantillas.value[index] = {
+          ...plantillaActualizada,
+          fechaCreacion: plantillaActualizada.created_at || plantillaActualizada.fechaCreacion || plantillas.value[index].fechaCreacion,
+          usos: plantillaActualizada.usos || plantillaActualizada.veces_usada || plantillas.value[index].usos
+        };
       }
       mostrarNotificacion('Plantilla actualizada exitosamente', 'success');
     }
@@ -797,7 +836,11 @@ const mostrarNotificacion = (mensaje, tipo = 'success') => {
 
 // Cerrar menú al hacer clic fuera
 const cerrarMenus = (event) => {
-  if (!event.target.closest('.relative')) {
+  // Si el click no es en un botón de menú o dentro del menú desplegable, cerrar
+  const botonMenu = event.target.closest('button');
+  const menuDesplegable = event.target.closest('.absolute.right-0.mt-2');
+  
+  if (!botonMenu && !menuDesplegable) {
     menuAbierto.value = null;
   }
 };
@@ -807,6 +850,11 @@ onMounted(() => {
   cargarPlantillas();
   providerStatus.value = whatsAppManager.getProviderStatus();
   document.addEventListener('click', cerrarMenus);
+});
+
+// Limpiar event listener al desmontar
+onBeforeUnmount(() => {
+  document.removeEventListener('click', cerrarMenus);
 });
 </script>
 
