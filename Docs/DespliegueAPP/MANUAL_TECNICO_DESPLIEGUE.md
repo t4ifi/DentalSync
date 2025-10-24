@@ -1,4 +1,4 @@
-# 📘 Manual Técnico de Despliegue - DentalSync
+# 📘 Manual Técnico - DentalSync
 
 **Versión:** 1.0.0  
 **Fecha:** 24 de octubre de 2025  
@@ -11,13 +11,12 @@
 1. [Resumen Ejecutivo](#resumen-ejecutivo)
 2. [Requerimientos del Sistema](#requerimientos-del-sistema)
 3. [Arquitectura de la Aplicación](#arquitectura)
-4. [Instalación Paso a Paso](#instalacion)
+4. [Instalación](#instalacion)
 5. [Configuración](#configuracion)
-6. [Scripts de Despliegue Automatizado](#scripts)
-7. [Verificación y Testing](#verificacion)
+6. [Scripts Automatizados](#scripts)
+7. [Uso en Desarrollo](#desarrollo)
 8. [Troubleshooting](#troubleshooting)
 9. [Mantenimiento](#mantenimiento)
-10. [Seguridad](#seguridad)
 
 ---
 
@@ -27,7 +26,7 @@ DentalSync es un sistema integral de gestión dental desarrollado con:
 - **Backend:** Laravel 12 + PHP 8.2
 - **Frontend:** Vue.js 3.4.21 + Vite 5.0
 - **Base de Datos:** MySQL/MariaDB 10.6+
-- **Servidor Web:** Apache/Nginx
+- **Servidor:** Laravel Development Server + Vite Dev Server
 
 **Características principales:**
 - ✅ Gestión de pacientes y citas
@@ -44,18 +43,6 @@ DentalSync es un sistema integral de gestión dental desarrollado con:
 
 ### Requerimientos de Hardware
 
-#### Servidor de Producción (Mínimo)
-- **CPU:** 2 cores (2.0 GHz+)
-- **RAM:** 4 GB
-- **Almacenamiento:** 20 GB SSD
-- **Ancho de banda:** 100 Mbps
-
-#### Servidor de Producción (Recomendado)
-- **CPU:** 4 cores (2.5 GHz+)
-- **RAM:** 8 GB
-- **Almacenamiento:** 50 GB SSD
-- **Ancho de banda:** 1 Gbps
-
 #### Desarrollo Local
 - **CPU:** 2 cores
 - **RAM:** 4 GB
@@ -67,18 +54,16 @@ DentalSync es un sistema integral de gestión dental desarrollado con:
 - ✅ **Ubuntu 22.04 LTS** (Recomendado)
 - ✅ Ubuntu 20.04 LTS
 - ✅ Debian 11/12
-- ✅ CentOS 8/9
 - ✅ macOS 12+ (Desarrollo)
 - ✅ Windows 10/11 + WSL2 (Desarrollo)
 
-#### Stack de Servidor
+#### Stack Requerido
 
 ##### PHP
 ```bash
 Versión requerida: PHP 8.2+
 Extensiones necesarias:
 - php8.2-cli
-- php8.2-fpm
 - php8.2-mysql
 - php8.2-xml
 - php8.2-mbstring
@@ -112,16 +97,10 @@ Opción 1: Apache 2.4+
   - mod_rewrite habilitado
   - mod_ssl habilitado
   
-Opción 2: Nginx 1.18+
-  - Con soporte FastCGI
-```
-
-#### Herramientas Adicionales
+##### MariaDB/MySQL
 ```bash
-- Git 2.30+
-- SSL/TLS Certificates (Let's Encrypt recomendado)
-- Supervisor (para colas de Laravel)
-- Redis (opcional, para cache y sesiones)
+MySQL: 8.0+
+MariaDB: 10.6+ (Recomendado)
 ```
 
 ---
@@ -163,48 +142,63 @@ DentalSync/
 │   └── web.php              # Rutas web
 │
 ├── storage/                 # Archivos generados
-│   ├── app/                # Subidas de usuarios
+│   ├── app/                # Subidas de usuarios (placas dentales)
 │   ├── logs/               # Logs de aplicación
 │   └── framework/          # Cache y sesiones
 │
-├── Docker/                  # Configuración Docker
-│   ├── docker-compose.dev.yml
-│   └── Dockerfile.dev
-│
 └── Docs/                    # Documentación
-    ├── DespliegueAPP/      # Este documento
+    ├── DespliegueAPP/      # Scripts y manuales
     └── ...
 ```
 
-### Diagrama de Flujo de Datos
+### Flujo de la Aplicación
 
 ```
-Usuario → Nginx/Apache → PHP-FPM → Laravel Router
-                                        ↓
-                         ┌──────────────┼──────────────┐
-                         ↓              ↓              ↓
-                    Middleware    Controllers     API Routes
-                         ↓              ↓              ↓
-                    Auth/CSRF      Models        Database
-                                      ↓
-                                   MySQL/MariaDB
+Usuario → Vue.js (Frontend)
+              ↓
+    HTTP Request (Axios)
+              ↓
+    Laravel Router (api.php)
+              ↓
+    Middleware (Auth/CSRF)
+              ↓
+    Controllers
+              ↓
+    Models (Eloquent)
+              ↓
+    MariaDB/MySQL
 ```
 
 ### Puertos Utilizados
 
 | Servicio | Puerto | Descripción |
 |----------|--------|-------------|
-| HTTP | 80 | Tráfico web no seguro (redirige a 443) |
-| HTTPS | 443 | Tráfico web seguro (SSL/TLS) |
+| Laravel Dev | 8000 | Servidor de desarrollo Laravel |
+| Vite Dev | 5173 | Hot Module Replacement (HMR) |
 | MySQL | 3306 | Base de datos |
-| Vite Dev | 5173 | Servidor de desarrollo (solo local) |
-| PHP-FPM | 9000 | FastCGI Process Manager |
 
 ---
 
-## 🚀 Instalación Paso a Paso {#instalacion}
+## 🚀 Instalación {#instalacion}
 
-### Método 1: Instalación Manual (Producción)
+### Método 1: Script Automatizado (Recomendado)
+
+El script automatizado instala todas las dependencias necesarias:
+
+```bash
+cd /ruta/a/DentalSync/Docs/DespliegueAPP/scripts
+sudo chmod +x install.sh
+sudo ./install.sh
+```
+
+**El script instalará:**
+- PHP 8.2 + extensiones necesarias
+- Composer 2.6+
+- Node.js 20.x LTS + NPM
+- MariaDB
+- Configuración de base de datos
+
+### Método 2: Instalación Manual
 
 #### Paso 1: Actualizar el sistema
 
@@ -223,7 +217,6 @@ sudo apt update
 sudo apt install -y \
     php8.2 \
     php8.2-cli \
-    php8.2-fpm \
     php8.2-mysql \
     php8.2-xml \
     php8.2-mbstring \
@@ -260,15 +253,12 @@ node -v
 npm -v
 ```
 
-#### Paso 5: Instalar y configurar MySQL/MariaDB
+#### Paso 5: Instalar MariaDB
 
 ```bash
-# Opción A: MySQL
-sudo apt install -y mysql-server
-sudo mysql_secure_installation
-
-# Opción B: MariaDB (Recomendado)
 sudo apt install -y mariadb-server
+sudo systemctl enable mariadb
+sudo systemctl start mariadb
 sudo mysql_secure_installation
 ```
 
@@ -279,237 +269,146 @@ sudo mysql -u root -p
 
 # Dentro de MySQL
 CREATE DATABASE dentalsync CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-CREATE USER 'dentalsync_user'@'localhost' IDENTIFIED BY 'PASSWORD_SEGURA_AQUI';
+CREATE USER 'dentalsync_user'@'localhost' IDENTIFIED BY 'tu_contraseña';
 GRANT ALL PRIVILEGES ON dentalsync.* TO 'dentalsync_user'@'localhost';
 FLUSH PRIVILEGES;
 EXIT;
 ```
 
-#### Paso 6: Instalar Nginx
+#### Paso 6: Clonar el proyecto
 
 ```bash
-sudo apt install -y nginx
-
-# Habilitar e iniciar Nginx
-sudo systemctl enable nginx
-sudo systemctl start nginx
+# Clonar desde GitHub (o copiar archivos)
+git clone https://github.com/t4ifi/DentalSync.git
+cd DentalSync
 ```
 
-#### Paso 7: Clonar el repositorio
+#### Paso 7: Instalar dependencias
 
 ```bash
-# Crear directorio de aplicaciones
-sudo mkdir -p /var/www
-
-# Clonar proyecto
-cd /var/www
-sudo git clone https://github.com/t4ifi/DentalSync.git dentalsync
-
-# Cambiar propietario
-sudo chown -R $USER:www-data /var/www/dentalsync
-```
-
-#### Paso 8: Instalar dependencias del proyecto
-
-```bash
-cd /var/www/dentalsync
-
 # Instalar dependencias PHP
-composer install --no-dev --optimize-autoloader
+composer install
 
 # Instalar dependencias Node.js
 npm install
-
-# Compilar assets para producción
-npm run build
 ```
 
-#### Paso 9: Configurar variables de entorno
+#### Paso 8: Configurar el proyecto
 
 ```bash
-# Copiar archivo de ejemplo
+# Copiar archivo de configuración
 cp .env.example .env
 
-# Editar configuración
+# Generar clave de aplicación
+php artisan key:generate
+
+# Editar .env con tus credenciales
 nano .env
 ```
 
-**Configuración mínima requerida en `.env`:**
+**Configuración básica de `.env`:**
 
 ```env
 APP_NAME=DentalSync
-APP_ENV=production
-APP_KEY=
-APP_DEBUG=false
-APP_URL=https://tu-dominio.com
+APP_ENV=local
+APP_KEY=base64:... (generada automáticamente)
+APP_DEBUG=true
+APP_URL=http://localhost:8000
 
 DB_CONNECTION=mysql
 DB_HOST=127.0.0.1
 DB_PORT=3306
 DB_DATABASE=dentalsync
 DB_USERNAME=dentalsync_user
-DB_PASSWORD=PASSWORD_SEGURA_AQUI
-
-SESSION_DRIVER=file
-QUEUE_CONNECTION=sync
-
-LOG_CHANNEL=stack
-LOG_LEVEL=error
+DB_PASSWORD=tu_contraseña
 ```
 
-#### Paso 10: Generar clave de aplicación
+#### Paso 9: Migrar base de datos
 
 ```bash
-php artisan key:generate
+php artisan migrate
 ```
 
-#### Paso 11: Ejecutar migraciones
+#### Paso 10: Configurar permisos
 
 ```bash
-# Ejecutar migraciones
-php artisan migrate --force
-
-# (Opcional) Ejecutar seeders para datos de prueba
-php artisan db:seed
-```
-
-#### Paso 12: Configurar permisos
-
-```bash
-# Permisos para storage y cache
-sudo chown -R www-data:www-data /var/www/dentalsync/storage
-sudo chown -R www-data:www-data /var/www/dentalsync/bootstrap/cache
-
-sudo chmod -R 775 /var/www/dentalsync/storage
-sudo chmod -R 775 /var/www/dentalsync/bootstrap/cache
-```
-
-#### Paso 13: Configurar Nginx
-
-```bash
-sudo nano /etc/nginx/sites-available/dentalsync
-```
-
-**Contenido del archivo:**
-
-```nginx
-server {
-    listen 80;
-    server_name tu-dominio.com www.tu-dominio.com;
-    
-    # Redirigir a HTTPS
-    return 301 https://$server_name$request_uri;
-}
-
-server {
-    listen 443 ssl http2;
-    server_name tu-dominio.com www.tu-dominio.com;
-    
-    root /var/www/dentalsync/public;
-    index index.php;
-
-    # SSL Configuration
-    ssl_certificate /etc/letsencrypt/live/tu-dominio.com/fullchain.pem;
-    ssl_certificate_key /etc/letsencrypt/live/tu-dominio.com/privkey.pem;
-    ssl_protocols TLSv1.2 TLSv1.3;
-    ssl_ciphers HIGH:!aNULL:!MD5;
-
-    # Logs
-    access_log /var/log/nginx/dentalsync-access.log;
-    error_log /var/log/nginx/dentalsync-error.log;
-
-    # Gzip compression
-    gzip on;
-    gzip_vary on;
-    gzip_types text/plain text/css application/json application/javascript text/xml application/xml application/xml+rss text/javascript;
-
-    # Security headers
-    add_header X-Frame-Options "SAMEORIGIN" always;
-    add_header X-Content-Type-Options "nosniff" always;
-    add_header X-XSS-Protection "1; mode=block" always;
-    add_header Referrer-Policy "no-referrer-when-downgrade" always;
-    add_header Content-Security-Policy "default-src 'self' http: https: data: blob: 'unsafe-inline'" always;
-
-    location / {
-        try_files $uri $uri/ /index.php?$query_string;
-    }
-
-    location ~ \.php$ {
-        fastcgi_pass unix:/var/run/php/php8.2-fpm.sock;
-        fastcgi_param SCRIPT_FILENAME $realpath_root$fastcgi_script_name;
-        include fastcgi_params;
-        fastcgi_hide_header X-Powered-By;
-    }
-
-    location ~ /\.(?!well-known).* {
-        deny all;
-    }
-
-    # Cache static assets
-    location ~* \.(jpg|jpeg|gif|png|css|js|ico|xml|svg|woff|woff2|ttf)$ {
-        expires 30d;
-        add_header Cache-Control "public, immutable";
-    }
-}
-```
-
-**Habilitar sitio:**
-
-```bash
-sudo ln -s /etc/nginx/sites-available/dentalsync /etc/nginx/sites-enabled/
-sudo nginx -t
-sudo systemctl reload nginx
-```
-
-#### Paso 14: Instalar SSL con Let's Encrypt
-
-```bash
-sudo apt install -y certbot python3-certbot-nginx
-
-# Obtener certificado
-sudo certbot --nginx -d tu-dominio.com -d www.tu-dominio.com
-
-# Verificar renovación automática
-sudo certbot renew --dry-run
+chmod -R 775 storage bootstrap/cache
 ```
 
 ---
 
-### Método 2: Instalación con Docker (Desarrollo)
+## 💻 Uso en Desarrollo {#desarrollo}
+
+### Iniciar la aplicación
+
+Una vez instaladas las dependencias y configurada la base de datos:
+
+**Terminal 1 - Servidor Backend:**
+```bash
+php artisan serve
+```
+
+**Terminal 2 - Servidor Frontend:**
+```bash
+npm run dev
+```
+
+**Acceder a la aplicación:**
+```
+http://localhost:8000
+```
+
+### Comandos útiles
 
 ```bash
-cd /ruta/a/DentalSync
+# Limpiar caché
+php artisan cache:clear
+php artisan config:clear
+php artisan route:clear
+php artisan view:clear
 
-# Usar Docker Compose
-docker-compose -f Docker/docker-compose.dev.yml up -d
+# Ver rutas disponibles
+php artisan route:list
 
-# Ejecutar migraciones dentro del contenedor
-docker exec -it dentalsync-app php artisan migrate
+# Ejecutar migraciones
+php artisan migrate
 
-# Acceder a la aplicación
-# http://localhost:8000
+# Rollback migraciones
+php artisan migrate:rollback
+
+# Refrescar migraciones (CUIDADO: borra datos)
+php artisan migrate:fresh
+
+# Ver logs en tiempo real
+tail -f storage/logs/laravel.log
 ```
 
 ---
 
 ## ⚙️ Configuración {#configuracion}
 
-### Variables de Entorno Importantes
+### Archivo .env
+
+El archivo `.env` contiene todas las configuraciones importantes:
 
 | Variable | Descripción | Ejemplo |
 |----------|-------------|---------|
 | `APP_NAME` | Nombre de la aplicación | DentalSync |
-| `APP_ENV` | Entorno de ejecución | production |
-| `APP_DEBUG` | Modo debug (false en prod) | false |
-| `APP_URL` | URL base de la app | https://dental.com |
-| `DB_*` | Configuración de base de datos | Ver .env.example |
-| `MAIL_*` | Configuración de correo | Ver .env.example |
-| `SESSION_DRIVER` | Driver de sesiones | file / redis |
-| `QUEUE_CONNECTION` | Driver de colas | sync / database |
+| `APP_ENV` | Entorno de ejecución | local / production |
+| `APP_DEBUG` | Modo debug | true / false |
+| `APP_URL` | URL base de la app | http://localhost:8000 |
+| `DB_CONNECTION` | Tipo de BD | mysql |
+| `DB_HOST` | Host de BD | 127.0.0.1 |
+| `DB_PORT` | Puerto de BD | 3306 |
+| `DB_DATABASE` | Nombre de BD | dentalsync |
+| `DB_USERNAME` | Usuario de BD | dentalsync_user |
+| `DB_PASSWORD` | Contraseña de BD | tu_contraseña |
 
-### Configuración de PHP
+### Configuración de PHP (Opcional)
 
-**Archivo:** `/etc/php/8.2/fpm/php.ini`
+Para archivos de placas dentales más grandes, ajustar:
+
+**Archivo:** `/etc/php/8.2/cli/php.ini`
 
 ```ini
 memory_limit = 256M
@@ -519,100 +418,75 @@ max_execution_time = 60
 date.timezone = America/Montevideo
 ```
 
-**Reiniciar PHP-FPM:**
-
-```bash
-sudo systemctl restart php8.2-fpm
-```
-
-### Optimización de Laravel
-
-```bash
-# Cache de configuración
-php artisan config:cache
-
-# Cache de rutas
-php artisan route:cache
-
-# Cache de vistas
-php artisan view:cache
-
-# Optimizar autoloader
-composer dump-autoload -o
-```
-
 ---
 
-## 🤖 Scripts de Despliegue Automatizado {#scripts}
+## 🤖 Scripts Automatizados {#scripts}
 
 Los scripts están ubicados en: `/Docs/DespliegueAPP/scripts/`
 
 ### Scripts disponibles:
 
-1. **`install.sh`** - Instalación completa automatizada
-2. **`setup-database.sh`** - Configuración de base de datos
-3. **`deploy.sh`** - Despliegue de actualizaciones
-4. **`backup.sh`** - Backup de BD y archivos
-5. **`restore.sh`** - Restaurar desde backup
+| Script | Descripción | Uso |
+|--------|-------------|-----|
+| `install.sh` | Instalación automatizada de dependencias | `sudo ./install.sh` |
+| `setup-database.sh` | Configurar base de datos | `sudo ./setup-database.sh` |
+| `backup.sh` | Backup de BD y archivos | `./backup.sh` |
+| `deploy.sh` | Actualizar aplicación | `./deploy.sh` |
+| `restore.sh` | Restaurar desde backup | `sudo ./restore.sh` |
+| `health-check.sh` | Verificar estado del sistema | `./health-check.sh` |
 
-**Uso:**
+**Uso básico:**
 
 ```bash
-cd /var/www/dentalsync/Docs/DespliegueAPP/scripts
+cd /ruta/a/DentalSync/Docs/DespliegueAPP/scripts
 
 # Dar permisos de ejecución
 chmod +x *.sh
 
-# Ejecutar instalación
+# Ejecutar instalación (solo la primera vez)
 sudo ./install.sh
+
+# Hacer backup
+./backup.sh
+
+# Verificar salud del sistema
+./health-check.sh
 ```
 
 ---
 
-## ✅ Verificación y Testing {#verificacion}
+## ✅ Verificación {#verificacion}
 
-### Checklist de Verificación Post-Instalación
+### Checklist Post-Instalación
 
+**1. Verificar servicios:**
 ```bash
-# 1. Verificar servicios activos
-sudo systemctl status nginx
-sudo systemctl status php8.2-fpm
-sudo systemctl status mysql
+# MariaDB activo
+sudo systemctl status mariadb
 
-# 2. Verificar permisos
-ls -la /var/www/dentalsync/storage
-ls -la /var/www/dentalsync/bootstrap/cache
-
-# 3. Verificar logs
-tail -f /var/www/dentalsync/storage/logs/laravel.log
-tail -f /var/log/nginx/dentalsync-error.log
-
-# 4. Verificar conexión a BD
-php artisan tinker
->>> DB::connection()->getPdo();
-
-# 5. Test de rutas
-php artisan route:list
+# PHP instalado
+php -v
 ```
 
-### Tests Funcionales
-
+**2. Verificar conexión a BD:**
 ```bash
-# Ejecutar tests
-php artisan test
-
-# Test de conexión API
-curl -I https://tu-dominio.com/api/login
+php artisan migrate:status
 ```
 
-### Verificación de Seguridad
-
+**3. Verificar permisos:**
 ```bash
-# Verificar headers de seguridad
-curl -I https://tu-dominio.com
+ls -la storage
+ls -la bootstrap/cache
+```
 
-# Verificar SSL
-openssl s_client -connect tu-dominio.com:443 -servername tu-dominio.com
+**4. Acceder a la aplicación:**
+```
+http://localhost:8000
+```
+
+**5. Verificar logs:**
+```bash
+tail -f storage/logs/laravel.log
 ```
 
 ---
@@ -621,161 +495,165 @@ openssl s_client -connect tu-dominio.com:443 -servername tu-dominio.com
 
 ### Problemas Comunes
 
-#### Error 500 - Internal Server Error
-
-**Causa:** Permisos incorrectos o error en código
+#### Error: "No application encryption key has been specified"
 
 **Solución:**
 ```bash
-# Revisar logs
-tail -100 /var/www/dentalsync/storage/logs/laravel.log
-
-# Corregir permisos
-sudo chown -R www-data:www-data /var/www/dentalsync/storage
-sudo chmod -R 775 /var/www/dentalsync/storage
+php artisan key:generate
 ```
 
 #### Error de conexión a la base de datos
 
+**Síntomas:**
+- SQLSTATE[HY000] [2002] Connection refused
+- SQLSTATE[HY000] [1045] Access denied
+
 **Solución:**
 ```bash
-# Verificar servicio MySQL
-sudo systemctl status mysql
+# 1. Verificar que MariaDB esté corriendo
+sudo systemctl status mariadb
+sudo systemctl start mariadb
 
-# Verificar credenciales en .env
-cat /var/www/dentalsync/.env | grep DB_
+# 2. Verificar credenciales en .env
+cat .env | grep DB_
 
-# Test de conexión
-php artisan tinker
->>> DB::connection()->getPdo();
+# 3. Probar conexión manualmente
+mysql -u dentalsync_user -p dentalsync
 ```
 
-#### Assets no cargan (404)
+#### Error: "Permission denied" en storage/
 
 **Solución:**
 ```bash
-# Recompilar assets
-cd /var/www/dentalsync
-npm run build
-
-# Limpiar cache
-php artisan cache:clear
-php artisan view:clear
+chmod -R 775 storage bootstrap/cache
 ```
 
-#### Sesiones no persisten
+#### Vite no conecta (HMR)
+
+**Síntomas:**
+- Assets no cargan en desarrollo
+- Error de conexión a localhost:5173
 
 **Solución:**
 ```bash
-# Verificar permisos de storage
-ls -la /var/www/dentalsync/storage/framework/sessions
+# Detener proceso
+# Limpiar y reinstalar
+rm -rf node_modules package-lock.json
+npm install
+npm run dev
+```
 
-# Regenerar clave de app
-php artisan key:generate
+#### Migraciones fallan
+
+**Solución:**
+```bash
+# Ver estado
+php artisan migrate:status
+
+# Hacer rollback y reintentar
+php artisan migrate:rollback
+php artisan migrate
+```
+
+php artisan migrate
 ```
 
 ---
 
 ## 🔄 Mantenimiento {#mantenimiento}
 
-### Tareas Diarias
+### Tareas de Mantenimiento
 
+**Backups regulares:**
 ```bash
-# Monitorear logs
-tail -f /var/www/dentalsync/storage/logs/laravel.log
-
-# Verificar espacio en disco
-df -h
+# Hacer backup de BD y archivos
+cd Docs/DespliegueAPP/scripts
+./backup.sh
 ```
 
-### Tareas Semanales
-
+**Limpieza de logs:**
 ```bash
-# Backup de base de datos
-./Docs/DespliegueAPP/scripts/backup.sh
-
-# Limpiar logs antiguos
-find /var/www/dentalsync/storage/logs -name "*.log" -mtime +30 -delete
-
-# Actualizar certificados SSL
-sudo certbot renew
+# Limpiar logs antiguos (más de 30 días)
+find storage/logs -name "*.log" -mtime +30 -delete
 ```
 
-### Tareas Mensuales
-
+**Monitoreo de logs:**
 ```bash
-# Actualizar dependencias
-composer update
-npm update
+# Ver logs en tiempo real
+tail -f storage/logs/laravel.log
 
-# Optimizar base de datos
-php artisan db:optimize
-
-# Revisar actualizaciones del sistema
-sudo apt update && sudo apt upgrade
+# Ver errores recientes
+tail -100 storage/logs/laravel.log | grep ERROR
 ```
 
-### Actualización de la Aplicación
+**Optimización:**
+```bash
+# Limpiar caché
+php artisan cache:clear
+php artisan config:clear
+php artisan route:clear
+php artisan view:clear
+
+# Optimizar (en producción)
+php artisan config:cache
+php artisan route:cache
+php artisan view:cache
+```
+
+### Actualizar la Aplicación
+
+**Desde Git:**
+```bash
+git pull origin main
+composer install
+npm install
+npm run build
+php artisan migrate
+php artisan cache:clear
+```
+
+**O usar el script:**
+```bash
+cd Docs/DespliegueAPP/scripts
+./deploy.sh
+```
+
+### Verificar Salud del Sistema
 
 ```bash
-# Ejecutar script de deploy
-cd /var/www/dentalsync/Docs/DespliegueAPP/scripts
-sudo ./deploy.sh
+cd Docs/DespliegueAPP/scripts
+./health-check.sh
 ```
 
 ---
 
-## 🔒 Seguridad {#seguridad}
+## 📝 Notas Adicionales
 
-### Checklist de Seguridad
+### Estructura de la Base de Datos
 
-- [ ] SSL/TLS habilitado (HTTPS)
-- [ ] Firewall configurado (UFW/iptables)
-- [ ] APP_DEBUG=false en producción
-- [ ] Contraseñas seguras en .env
-- [ ] Backups automáticos configurados
-- [ ] Headers de seguridad en Nginx
-- [ ] CSRF protection habilitado
-- [ ] Rate limiting en API
-- [ ] Logs de auditoría activos
+Tablas principales:
+- `usuarios` - Usuarios del sistema (dentista/recepcionista)
+- `pacientes` - Datos de pacientes
+- `citas` - Citas programadas
+- `tratamientos` - Tratamientos realizados
+- `pagos` - Pagos y cuotas
+- `placas_dentales` - Archivos de placas dentales
+- `whatsapp_*` - Sistema de WhatsApp
 
-### Configurar Firewall
+### Datos de Prueba
 
+Para crear datos de prueba:
 ```bash
-# Habilitar UFW
-sudo ufw enable
-
-# Permitir SSH
-sudo ufw allow 22/tcp
-
-# Permitir HTTP/HTTPS
-sudo ufw allow 80/tcp
-sudo ufw allow 443/tcp
-
-# Verificar estado
-sudo ufw status
+cd scripts
+php crear-datos-prueba.php
 ```
 
-### Hardening de MySQL
+### Configuración de WhatsApp
 
-```bash
-# Configurar en /etc/mysql/mysql.conf.d/mysqld.cnf
-[mysqld]
-bind-address = 127.0.0.1
-max_connections = 100
-wait_timeout = 300
-```
-
-### Monitoreo
-
-**Instalar herramientas de monitoreo:**
-
-```bash
-# Htop para monitoreo de recursos
-sudo apt install htop
-
-# Netdata para dashboard completo
-bash <(curl -Ss https://my-netdata.io/kickstart.sh)
+La integración con WhatsApp requiere configuración adicional en `.env`:
+```env
+WHATSAPP_API_URL=tu_url_api
+WHATSAPP_TOKEN=tu_token
 ```
 
 ---
@@ -783,11 +661,10 @@ bash <(curl -Ss https://my-netdata.io/kickstart.sh)
 ## 📞 Soporte
 
 **Documentación adicional:**
-- `/Docs/` - Documentación del proyecto
-- `README.md` - Guía rápida
+- `/Docs/` - Documentación completa del proyecto
+- `README.md` - Guía rápida de inicio
 
-**Contacto:**
-- Email: soporte@dentalsync.com
+**Repositorio:**
 - GitHub: https://github.com/t4ifi/DentalSync
 
 ---
