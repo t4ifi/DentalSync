@@ -17,7 +17,7 @@ use Illuminate\Support\Facades\Schema;
  * - Control de saldos y estados de pago
  * - Manejo de cuotas y observaciones
  * 
- * @author Andrés Núñez - NullDevs
+ * @author Andrés Núñez
  * @created 2025-07-28
  * @version 1.0
  */

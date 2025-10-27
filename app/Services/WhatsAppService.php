@@ -23,7 +23,7 @@ use Illuminate\Support\Facades\Cache;
  * - Rate limiting y retry logic
  *
  * @package App\Services
- * @author DentalSync Development Team
+ * @author Andrés Núñez
  * @version 1.0
  * @since 2025-10-09
  */

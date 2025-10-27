@@ -1,7 +1,7 @@
 # 🧪 PROCESOS DE TESTEO
 
 **Sistema:** DentalSync - Gestión Integral para Consultorios Dentales  
-**Equipo:** NullDevs  
+**Desarrollador:** Andrés Núñez  
 **Fecha:** 15 de octubre de 2025  
 **Versión:** 1.0
 
@@ -55,7 +55,7 @@ Se implementó una **metodología híbrida** combinando:
 
 #### **Fase 3: Testing de Sistema**
 - **Alcance:** Sistema completo en ambiente de staging
-- **Responsable:** Todo el equipo NullDevs
+- **Responsable:** Andrés Núñez
 - **Herramientas:** Navegadores múltiples, dispositivos variados
 - **Frecuencia:** Pre-release de cada versión
 
@@ -388,6 +388,6 @@ El proceso de testing de DentalSync demuestra que una **metodología integral** 
 
 ---
 
-*Elaborado por: **Andrés Núñez - Equipo NullDevs***  
+*Elaborado por: **Andrés Núñez***  
 *Basado en: Metodologías de testing estándar, herramientas modernas de QA y validación con usuarios reales*  
 *Framework: Testing híbrido (manual + automatizado) con enfoque en calidad médica*

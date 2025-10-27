@@ -25,7 +25,7 @@ use Illuminate\Support\Facades\Log;
  * - Gestión automática de conversaciones
  *
  * @package App\Http\Controllers\Api
- * @author DentalSync Development Team
+ * @author Andrés Núñez
  * @version 1.0
  * @since 2025-10-09
  */

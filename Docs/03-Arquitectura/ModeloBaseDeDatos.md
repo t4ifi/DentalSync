@@ -1,6 +1,5 @@
 # Modelo de Base de Datos – Sistema de Gestión de Consultorio Odontológico
-**Autor: Andrés – NullDevs**  
-**Adrián - NullDevs**
+**Autor: Andrés Núñez**
 
 ## Tablas Principales
 

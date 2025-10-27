@@ -21,7 +21,7 @@ use Illuminate\Support\Facades\Schema;
  * - Cache de configuraciones del sistema
  * - Prevención de condiciones de carrera con bloqueos
  * 
- * @author Laravel Framework / Adaptado por Andrés Núñez - NullDevs
+ * @author Laravel Framework / Adaptado por Andrés Núñez
  * @created 2001-01-01 (Migración base de Laravel)
  * @version 1.0
  */

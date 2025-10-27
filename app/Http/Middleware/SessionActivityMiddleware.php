@@ -21,7 +21,7 @@ use Carbon\Carbon;
  * - Compatible con Auth de Laravel y sesión personalizada
  *
  * @package App\Http\Middleware
- * @author DentalSync Development Team
+ * @author Andrés Núñez
  * @version 2.0
  * @since 2025-09-04
  */

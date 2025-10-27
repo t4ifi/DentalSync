@@ -35,7 +35,7 @@ use App\Models\Paciente;
  * - Alergias y observaciones: opcionales, máximo 1000 caracteres
  * 
  * @package App\Http\Controllers
- * @author DentalSync Development Team
+ * @author Andrés Núñez
  * @version 2.1
  * @since 2025-09-04
  */

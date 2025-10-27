@@ -32,7 +32,7 @@ use Symfony\Component\HttpFoundation\Response;
  * - Cumple con normativas de privacidad médica
  *
  * @package App\Http\Middleware
- * @author DentalSync Development Team
+ * @author Andrés Núñez
  * @version 3.0
  * @since 2025-10-23
  */

@@ -22,7 +22,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * - Métodos auxiliares para actualizar actividad
  *
  * @package App\Models
- * @author DentalSync Development Team
+ * @author Andrés Núñez
  * @version 2.0
  * @since 2025-09-04
  */

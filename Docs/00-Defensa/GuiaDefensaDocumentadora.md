@@ -1,8 +1,8 @@
 # 📚 GUÍA DE DEFENSA DEL PROYECTO - DOCUMENTADORA
 
 **Sistema:** DentalSync - Gestión Integral para Consultorios Dentales  
-**Equipo:** NullDevs  
-**Rol:** Documentadora del Proyecto  
+**Desarrollador:** Andrés Núñez  
+**Rol:** Desarrollador y Documentador del Proyecto  
 **Fecha:** 15 de octubre de 2025  
 **Versión:** 1.0
 
@@ -10,7 +10,7 @@
 
 ## 🎯 INTRODUCCIÓN PARA LA DOCUMENTADORA
 
-Esta guía está diseñada específicamente para **preparar la defensa del proyecto** desde la perspectiva de **documentación técnica y metodológica**. Como documentadora del equipo NullDevs, tu rol es fundamental para **demostrar la solidez académica** y **profesionalismo** del proyecto DentalSync.
+Esta guía está diseñada específicamente para **preparar la defensa del proyecto** desde la perspectiva de **documentación técnica y metodológica**. Como desarrollador del proyecto DentalSync, es fundamental **demostrar la solidez académica** y **profesionalismo** del sistema desarrollado.
 
 ### **Tu Responsabilidad en la Defensa**
 - **Explicar la metodología** de documentación aplicada
@@ -26,7 +26,7 @@ Esta guía está diseñada específicamente para **preparar la defensa del proye
 - **Nombre:** DentalSync - Sistema de Gestión para Consultorios Dentales
 - **Tipo:** Aplicación Web SPA (Single Page Application)
 - **Contexto:** Proyecto de grado - 3er año Técnico en Informática
-- **Equipo:** NullDevs (3 integrantes)
+- **Desarrollador:** Andrés Núñez
 - **Duración:** 6 meses de desarrollo activo
 
 ### **Tecnologías Implementadas**
@@ -350,6 +350,6 @@ Como documentadora, implementaste una **metodología híbrida** combinando:
 
 ---
 
-*Elaborado por: **Andrés Núñez - Equipo NullDevs***  
+*Elaborado por: **Andrés Núñez***  
 *Especializado para: **Rol de Documentadora en Defensa de Proyecto***  
 *Enfoque: **Metodología académica + Evidencia técnica + Resultados reales***

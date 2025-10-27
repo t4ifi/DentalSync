@@ -40,7 +40,7 @@ use Illuminate\Support\Facades\DB;
  * - atendida: Cita completada con fecha de atención
  * 
  * @package App\Http\Controllers
- * @author DentalSync Development Team
+ * @author Andrés Núñez
  * @version 2.1
  * @since 2025-09-04
  */
@@ -385,7 +385,7 @@ class CitaController extends Controller
      * - Sanitización automática de entrada de Laravel
      * 
      * @since 1.0.0
-     * @author Sistema DentalSync
+     * @author Andrés Núñez
      */
     public function store(Request $request)
     {
@@ -585,7 +585,7 @@ class CitaController extends Controller
      * - Recomendado implementar soft delete para mejor trazabilidad
      * 
      * @since 1.0.0
-     * @author Sistema DentalSync
+     * @author Andrés Núñez
      */
     public function destroy($id)
     {
@@ -696,7 +696,7 @@ class CitaController extends Controller
      * - Sistemas de integración externa
      * 
      * @since 1.0.0
-     * @author Sistema DentalSync
+     * @author Andrés Núñez
      */
     private function obtenerUsuarioAutomatico()
     {
@@ -764,7 +764,7 @@ class CitaController extends Controller
      * Solo considera citas con estados activos (no canceladas).
      * 
      * @since 2.1.0
-     * @author Sistema DentalSync
+     * @author Andrés Núñez
      */
     private function verificarConflictoHorario(\DateTime $fechaCita)
     {
