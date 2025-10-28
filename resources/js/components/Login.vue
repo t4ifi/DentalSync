@@ -45,12 +45,14 @@
                     Accediendo...
                   </span>
                 </button>
-                <div v-if="error" class="error-container">
-                  <div class="error-message">
-                    <i class='bx bx-error-circle'></i>
-                    <span>{{ error }}</span>
+                <transition name="error-fade">
+                  <div v-if="error" class="error-container">
+                    <div class="error-message">
+                      <i class='bx bx-error-circle'></i>
+                      <span>{{ error }}</span>
+                    </div>
                   </div>
-                </div>
+                </transition>
               </form>
               <footer>© 2025 NullDevs. Todos los derechos reservados.</footer>
             </div>
@@ -75,7 +77,8 @@ export default {
       usuarioGuardado: null,
       cargando: false,
       loggingIn: false,
-      showError: false
+      showError: false,
+      errorTimeout: null
     };
   },
   mounted() {
@@ -86,13 +89,16 @@ export default {
   },
   methods: {
     async login() {
-      this.clearError();
+      // NO limpiar error aquí - solo validar
       
       if (!this.usuario || !this.password) {
         this.showErrorMessage('Por favor, completá todos los campos.');
         return;
       }
       
+      // Limpiar error solo cuando realmente se intenta el login
+      this.error = '';
+      this.showError = false;
       this.loggingIn = true;
 
       try {
@@ -119,7 +125,7 @@ export default {
         }, 400); // Solo 0.4 segundos para que sea más fluido
         
       } catch (err) {
-        console.log('🔐 Credenciales incorrectas');
+        // console.log('🔐 Credenciales incorrectas');
         this.loggingIn = false;
         
         // Limpiar contraseña por seguridad
@@ -138,6 +144,11 @@ export default {
     },
     
     showErrorMessage(message) {
+      // Limpiar timeout anterior si existe
+      if (this.errorTimeout) {
+        clearTimeout(this.errorTimeout);
+      }
+      
       this.error = message;
       this.showError = true;
       
@@ -148,18 +159,22 @@ export default {
         }
       });
       
-      // Remover la animación después de que termine
+      // Remover la animación de shake después de que termine
       setTimeout(() => {
         this.showError = false;
       }, 600);
       
-      // Ocultar el mensaje de error después de 5 segundos
-      setTimeout(() => {
-        this.error = '';
-      }, 5000);
+      // NO ocultar automáticamente el mensaje - que el usuario lo vea hasta que escriba
+      // El mensaje solo se oculta cuando el usuario empieza a escribir (clearError)
     },
     
     clearError() {
+      // Limpiar timeout si existe
+      if (this.errorTimeout) {
+        clearTimeout(this.errorTimeout);
+        this.errorTimeout = null;
+      }
+      
       this.error = '';
       this.showError = false;
     }
@@ -315,17 +330,20 @@ export default {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 12px 16px;
+  padding: 14px 18px;
   background-color: #fef2f2;
-  border: 1px solid #fecaca;
+  border: 2px solid #ef4444;
   border-radius: 8px;
   color: #dc2626;
-  font-size: 0.9rem;
+  font-size: 0.95rem;
+  font-weight: 500;
   animation: slideDown 0.3s ease-out;
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.15);
 }
 .error-message i {
-  font-size: 1.1rem;
+  font-size: 1.3rem;
   flex-shrink: 0;
+  color: #ef4444;
 }
 @keyframes slideDown {
   from {
@@ -336,6 +354,16 @@ export default {
     opacity: 1;
     transform: translateY(0);
   }
+}
+.error-fade-enter-active {
+  animation: slideDown 0.3s ease-out;
+}
+.error-fade-leave-active {
+  transition: all 0.5s ease-in;
+}
+.error-fade-leave-to {
+  opacity: 0;
+  transform: translateY(-10px);
 }
 .form-shake {
   animation: shake 0.6s ease-in-out;

@@ -96,7 +96,14 @@
                     <i class='bx bx-user text-blue-600 text-xl'></i>
                   </div>
                   <div class="ml-4">
-                    <div class="text-sm font-medium text-gray-900">{{ usuario.usuario }}</div>
+                    <div class="text-sm font-medium text-gray-900 flex items-center gap-2">
+                      {{ usuario.usuario }}
+                      <span v-if="esUsuarioActual(usuario)" 
+                            class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800">
+                        <i class='bx bx-user-check mr-1'></i>
+                        Tú
+                      </span>
+                    </div>
                   </div>
                 </div>
               </td>
@@ -145,18 +152,31 @@
                   </button>
                   <button 
                     @click="editarUsuario(usuario)"
-                    class="text-green-600 hover:text-green-900 p-1 rounded"
-                    title="Editar usuario"
+                    :disabled="esUsuarioActual(usuario)"
+                    :class="[
+                      'p-1 rounded',
+                      esUsuarioActual(usuario) 
+                        ? 'text-gray-300 cursor-not-allowed' 
+                        : 'text-green-600 hover:text-green-900'
+                    ]"
+                    :title="esUsuarioActual(usuario) ? 'No podés editarte a vos mismo' : 'Editar usuario'"
                   >
                     <i class='bx bx-edit text-lg'></i>
                   </button>
                   <button 
                     @click="toggleEstado(usuario)"
+                    :disabled="esUsuarioActual(usuario)"
                     :class="[
                       'p-1 rounded',
-                      usuario.activo ? 'text-orange-600 hover:text-orange-900' : 'text-green-600 hover:text-green-900'
+                      esUsuarioActual(usuario)
+                        ? 'text-gray-300 cursor-not-allowed'
+                        : usuario.activo 
+                          ? 'text-orange-600 hover:text-orange-900' 
+                          : 'text-green-600 hover:text-green-900'
                     ]"
-                    :title="usuario.activo ? 'Desactivar' : 'Activar'"
+                    :title="esUsuarioActual(usuario) 
+                      ? 'No podés cambiar tu propio estado' 
+                      : usuario.activo ? 'Desactivar' : 'Activar'"
                   >
                     <i :class="[
                       'text-lg',
@@ -165,8 +185,14 @@
                   </button>
                   <button 
                     @click="eliminarUsuario(usuario)"
-                    class="text-red-600 hover:text-red-900 p-1 rounded"
-                    title="Eliminar usuario"
+                    :disabled="esUsuarioActual(usuario)"
+                    :class="[
+                      'p-1 rounded',
+                      esUsuarioActual(usuario)
+                        ? 'text-gray-300 cursor-not-allowed'
+                        : 'text-red-600 hover:text-red-900'
+                    ]"
+                    :title="esUsuarioActual(usuario) ? 'No podés eliminarte a vos mismo' : 'Eliminar usuario'"
                   >
                     <i class='bx bx-trash text-lg'></i>
                   </button>
@@ -228,6 +254,74 @@
       </div>
     </div>
 
+    <!-- Modal de Confirmación de Eliminación -->
+    <div v-if="modalEliminar" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50 flex items-center justify-center" @click="cerrarModalEliminar">
+      <div class="relative mx-auto p-6 border w-11/12 md:w-96 shadow-lg rounded-lg bg-white animate-scale-in" @click.stop>
+        <!-- Ícono de advertencia -->
+        <div class="flex justify-center mb-4">
+          <div class="bg-red-100 rounded-full p-3">
+            <i class='bx bx-error text-red-600 text-5xl'></i>
+          </div>
+        </div>
+        
+        <!-- Título -->
+        <h3 class="text-xl font-bold text-gray-900 text-center mb-2">
+          ¿Eliminar Usuario?
+        </h3>
+        
+        <!-- Mensaje -->
+        <div v-if="usuarioAEliminar" class="mb-6">
+          <p class="text-gray-600 text-center mb-4">
+            Estás a punto de eliminar al usuario:
+          </p>
+          <div class="bg-gray-50 rounded-lg p-4 border border-gray-200">
+            <div class="flex items-center justify-center mb-2">
+              <div class="h-12 w-12 rounded-full bg-blue-100 flex items-center justify-center">
+                <i class='bx bx-user text-blue-600 text-2xl'></i>
+              </div>
+            </div>
+            <p class="text-center font-semibold text-gray-900">{{ usuarioAEliminar.nombre }}</p>
+            <p class="text-center text-sm text-gray-600">@{{ usuarioAEliminar.usuario }}</p>
+            <p class="text-center text-xs text-gray-500 mt-1">
+              <span :class="[
+                'inline-flex px-2 py-1 rounded-full',
+                usuarioAEliminar.rol === 'dentista' ? 'bg-purple-100 text-purple-800' : 'bg-orange-100 text-orange-800'
+              ]">
+                {{ usuarioAEliminar.rol === 'dentista' ? 'Dentista' : 'Recepcionista' }}
+              </span>
+            </p>
+          </div>
+          <div class="mt-4 bg-red-50 border border-red-200 rounded-lg p-3">
+            <p class="text-sm text-red-800 text-center">
+              <i class='bx bx-info-circle mr-1'></i>
+              <strong>Esta acción no se puede deshacer.</strong>
+            </p>
+            <p class="text-xs text-red-700 text-center mt-1">
+              Se eliminarán todos los datos asociados al usuario.
+            </p>
+          </div>
+        </div>
+        
+        <!-- Botones de acción -->
+        <div class="flex space-x-3">
+          <button 
+            @click="cerrarModalEliminar"
+            class="flex-1 bg-gray-200 text-gray-700 px-4 py-3 rounded-lg font-medium hover:bg-gray-300 transition-colors"
+          >
+            <i class='bx bx-x mr-1'></i>
+            Cancelar
+          </button>
+          <button 
+            @click="confirmarEliminacion"
+            class="flex-1 bg-red-600 text-white px-4 py-3 rounded-lg font-medium hover:bg-red-700 transition-colors"
+          >
+            <i class='bx bx-trash mr-1'></i>
+            Eliminar
+          </button>
+        </div>
+      </div>
+    </div>
+
     <!-- Notificaciones -->
     <div v-if="notification.show" 
          :class="[
@@ -255,7 +349,10 @@ export default {
       usuarios: [],
       loading: false,
       modalDetalles: false,
+      modalEliminar: false,
       usuarioSeleccionado: null,
+      usuarioAEliminar: null,
+      usuarioActualId: null, // ID del usuario logueado
       statistics: {
         total: 0,
         activos: 0,
@@ -303,6 +400,10 @@ export default {
     }
   },
   mounted() {
+    // Obtener el ID del usuario logueado desde sessionStorage
+    const usuarioLogueado = JSON.parse(sessionStorage.getItem('usuario') || '{}')
+    this.usuarioActualId = usuarioLogueado.id
+    
     this.cargarUsuarios()
     this.cargarEstadisticas()
   },
@@ -344,10 +445,21 @@ export default {
     },
 
     editarUsuario(usuario) {
+      // Prevenir edición del propio usuario
+      if (this.esUsuarioActual(usuario)) {
+        this.mostrarNotificacion('No podés editar tu propio usuario', 'error')
+        return
+      }
       this.$router.push(`/usuarios/editar/${usuario.id}`)
     },
 
     async toggleEstado(usuario) {
+      // Prevenir desactivación del propio usuario
+      if (this.esUsuarioActual(usuario)) {
+        this.mostrarNotificacion('No podés cambiar el estado de tu propio usuario', 'error')
+        return
+      }
+      
       try {
         const response = await axios.post(`/api/usuarios/${usuario.id}/toggle-status`)
         if (response.data.success) {
@@ -364,22 +476,38 @@ export default {
       }
     },
 
-    async eliminarUsuario(usuario) {
-      if (confirm(`¿Está seguro de eliminar al usuario "${usuario.nombre}"? Esta acción no se puede deshacer.`)) {
-        try {
-          const response = await axios.delete(`/api/usuarios/${usuario.id}`)
-          if (response.data.success) {
-            this.usuarios = this.usuarios.filter(u => u.id !== usuario.id)
-            this.mostrarNotificacion('Usuario eliminado exitosamente', 'success')
-            this.cargarEstadisticas()
-          }
-        } catch (error) {
-          console.error('Error al eliminar usuario:', error)
-          this.mostrarNotificacion(
-            error.response?.data?.message || 'Error al eliminar usuario',
-            'error'
-          )
+    eliminarUsuario(usuario) {
+      // Prevenir eliminación del propio usuario
+      if (this.esUsuarioActual(usuario)) {
+        this.mostrarNotificacion('No podés eliminar tu propio usuario', 'error')
+        return
+      }
+      this.usuarioAEliminar = usuario
+      this.modalEliminar = true
+    },
+
+    cerrarModalEliminar() {
+      this.modalEliminar = false
+      this.usuarioAEliminar = null
+    },
+
+    async confirmarEliminacion() {
+      if (!this.usuarioAEliminar) return
+      
+      try {
+        const response = await axios.delete(`/api/usuarios/${this.usuarioAEliminar.id}`)
+        if (response.data.success) {
+          this.usuarios = this.usuarios.filter(u => u.id !== this.usuarioAEliminar.id)
+          this.mostrarNotificacion('Usuario eliminado exitosamente', 'success')
+          this.cargarEstadisticas()
+          this.cerrarModalEliminar()
         }
+      } catch (error) {
+        console.error('Error al eliminar usuario:', error)
+        this.mostrarNotificacion(
+          error.response?.data?.message || 'Error al eliminar usuario',
+          'error'
+        )
       }
     },
 
@@ -411,7 +539,42 @@ export default {
       setTimeout(() => {
         this.notification.show = false
       }, 5000)
+    },
+
+    esUsuarioActual(usuario) {
+      return usuario.id === this.usuarioActualId
     }
   }
 }
 </script>
+
+<style scoped>
+@keyframes scale-in {
+  from {
+    transform: scale(0.9);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.animate-scale-in {
+  animation: scale-in 0.2s ease-out;
+}
+
+/* Transición suave para el backdrop del modal */
+.fixed.inset-0 {
+  animation: fadeIn 0.2s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+</style>

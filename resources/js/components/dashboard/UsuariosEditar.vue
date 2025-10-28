@@ -21,7 +21,19 @@
     </div>
 
     <!-- Formulario -->
-    <div v-else class="bg-white rounded-lg shadow-sm p-8 max-w-2xl mx-auto">
+    <div v-else>
+      <!-- Alerta de advertencia si intenta editarse a sí mismo -->
+      <div v-if="usuarioId == usuarioActualId" class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-6 rounded" role="alert">
+        <div class="flex items-center">
+          <i class='bx bx-error text-2xl mr-3'></i>
+          <div>
+            <p class="font-bold">Acción no permitida</p>
+            <p class="text-sm">No podés editar tu propio usuario. Serás redirigido en breve...</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-white rounded-lg shadow-sm p-8 max-w-2xl mx-auto">
       <form @submit.prevent="actualizarUsuario">
         <div class="space-y-6">
           <!-- Información del usuario actual -->
@@ -273,6 +285,7 @@
           </button>
         </div>
       </form>
+      </div>
     </div>
 
     <!-- Notificaciones -->
@@ -300,6 +313,7 @@ export default {
   data() {
     return {
       usuarioId: null,
+      usuarioActualId: null, // ID del usuario logueado
       usuarioOriginal: {},
       formData: {
         usuario: '',
@@ -378,7 +392,21 @@ export default {
     }
   },
   mounted() {
+    // Obtener el ID del usuario logueado desde sessionStorage
+    const usuarioLogueado = JSON.parse(sessionStorage.getItem('usuario') || '{}')
+    this.usuarioActualId = usuarioLogueado.id
+    
     this.usuarioId = this.$route.params.id
+    
+    // Verificar si está intentando editar su propio usuario
+    if (this.usuarioId == this.usuarioActualId) {
+      this.mostrarNotificacion('No podés editar tu propio usuario', 'error')
+      setTimeout(() => {
+        this.$router.push('/usuarios/ver')
+      }, 2000)
+      return
+    }
+    
     if (this.usuarioId) {
       this.cargarUsuario()
     } else {

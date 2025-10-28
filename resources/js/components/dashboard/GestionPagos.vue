@@ -109,18 +109,6 @@
             ></textarea>
           </div>
 
-          <!-- Monto total -->
-          <div class="form-group">
-            <label>💵 Monto Total</label>
-            <input 
-              type="text" 
-              v-model="nuevoPago.monto_total" 
-              @input="formatearInputMonto($event, 'monto_total')"
-              placeholder="0"
-              required
-            >
-          </div>
-
           <!-- Modalidad de pago -->
           <div class="form-group">
             <label class="flex items-center gap-2">
@@ -133,6 +121,18 @@
               <option value="cuotas_fijas">Pago en Cuotas Fijas</option>
               <option value="cuotas_variables">Pago con Cuotas Variables</option>
             </select>
+          </div>
+
+          <!-- Monto total -->
+          <div class="form-group">
+            <label>💵 Monto Total</label>
+            <input 
+              type="text" 
+              v-model="nuevoPago.monto_total" 
+              @input="formatearInputMonto($event, 'monto_total')"
+              placeholder="0"
+              required
+            >
           </div>
 
           <!-- Configuración para cuotas fijas -->
@@ -602,6 +602,18 @@ export default {
     mostrarOpcion(opcion) {
       this.opcionActiva = opcion;
       this.limpiarMensaje();
+      
+      // Limpiar datos de las secciones al cambiar de opción
+      if (opcion === 'registrar') {
+        this.limpiarFormulario();
+      } else if (opcion === 'ver') {
+        this.pacienteSeleccionado = '';
+        this.pagosPaciente = null;
+      } else if (opcion === 'cuota') {
+        this.pacienteCuota = '';
+        this.pagosPendientes = [];
+        this.cuotasDetalle = {};
+      }
     },
     
     async registrarPago() {
@@ -706,8 +718,8 @@ export default {
       try {
         console.log(`📥 Cargando cuotas para pago ID: ${pagoId}`);
         
-        const response = await fetch(`/api/pagos/cuotas/${pagoId}`);
-        const data = await response.json();
+        const response = await axios.get(`/api/pagos/cuotas/${pagoId}`);
+        const data = response.data;
         
         console.log('Respuesta del servidor:', data);
         
