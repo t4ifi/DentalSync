@@ -1,92 +1,98 @@
 # Librerías utilizadas en el proyecto DentalSync
 
-Este documento lista las librerías principales usadas en el proyecto, tanto del ecosistema JavaScript (frontend) como PHP/Composer (backend), con la versión indicada en los archivos de manifiesto (`package.json`, `composer.json`) y una nota breve sobre su uso.
+Una referencia rápida y estética de las librerías usadas tanto en el frontend (npm) como en el backend (Composer). Incluye versiones, breve descripción y enlaces útiles.
+
+---
+
+## Resumen rápido
+
+| Ecosistema | Paquetes clave | Uso principal |
+|---|---|---|
+| Frontend (npm) | Vue 3, Vue Router, Axios, Tailwind, jsPDF | Interfaz SPA, enrutamiento, llamadas API, estilos y generación de PDFs |
+| Backend (Composer) | Laravel 12, Guzzle | API REST, lógica de servidor y cliente HTTP |
 
 ---
 
 ## Dependencias JavaScript (package.json)
 
-### Dependencias de producción
+### Producción
 
-- vue: ^3.5.17
-  - Framework principal de la interfaz (Vue 3).
-- vue-router: ^4.5.1
-  - Enrutamiento SPA para la aplicación frontend.
-- axios: ^1.8.2
-  - Cliente HTTP para llamadas al backend (API REST).
-- @fortawesome/fontawesome-svg-core: ^7.0.0
-  - Núcleo de FontAwesome para íconos.
-- @fortawesome/free-solid-svg-icons: ^7.0.0
-  - Conjunto de íconos sólidos usados en la UI.
-- @fortawesome/vue-fontawesome: ^3.1.0
-  - Integración de FontAwesome con componentes Vue.
-- jspdf: ^3.0.1
-  - Generación de PDF en el cliente.
-- jspdf-autotable: ^5.0.2
-  - Extensión para generar tablas en PDFs con jsPDF.
-- v-calendar: ^3.1.2
-  - Componente de calendario para selección de fechas.
-- vue-cal: ^4.10.2
-  - Calendario/agenda enriquecido.
+| Paquete | Versión | Descripción | Docs |
+|---|---:|---|---|
+| vue | ^3.5.17 | Framework UI principal (Vue 3) | https://vuejs.org/ |
+| vue-router | ^4.5.1 | Enrutamiento SPA | https://router.vuejs.org/ |
+| axios | ^1.8.2 | Cliente HTTP para consumir la API | https://axios-http.com/ |
+| @fortawesome/fontawesome-svg-core | ^7.0.0 | Núcleo FontAwesome | https://fontawesome.com/ |
+| @fortawesome/free-solid-svg-icons | ^7.0.0 | Íconos sólidos | https://fontawesome.com/ |
+| @fortawesome/vue-fontawesome | ^3.1.0 | Integración FontAwesome + Vue | https://github.com/FortAwesome/vue-fontawesome |
+| jspdf | ^3.0.1 | Generación de PDF en cliente | https://github.com/parallax/jsPDF |
+| jspdf-autotable | ^5.0.2 | Tablas para jsPDF | https://github.com/simonbengtsson/jsPDF-AutoTable |
+| v-calendar | ^3.1.2 | Selector de fechas | https://vcalendar.io/ |
+| vue-cal | ^4.10.2 | Calendario/agenda | https://antoniandre.github.io/vue-cal/ |
 
-### Dependencias de desarrollo
+### Desarrollo
 
-- vite: ^7.0.4
-  - Herramienta de bundling y servidor de desarrollo.
-- @vitejs/plugin-vue: ^6.0.1
-  - Plugin de Vue para Vite.
-- tailwindcss: ^3.4.18
-  - Framework de utilidades CSS.
-- postcss: ^8.5.6
-  - Procesamiento de CSS (usado por Tailwind y otros plugins).
-- autoprefixer: ^10.4.21
-  - Añade prefijos de navegador a CSS.
-- laravel-vite-plugin: ^2.0.0
-  - Integración entre Laravel y Vite.
-- concurrently: ^9.0.1
-  - Ejecutar múltiples comandos en paralelo durante desarrollo.
+| Paquete | Versión | Uso |
+|---|---:|---|
+| vite | ^7.0.4 | Bundler / servidor dev |
+| @vitejs/plugin-vue | ^6.0.1 | Plugin Vue para Vite |
+| tailwindcss | ^3.4.18 | Utilidades CSS |
+| postcss | ^8.5.6 | Procesamiento CSS |
+| autoprefixer | ^10.4.21 | Prefijos CSS |
+| laravel-vite-plugin | ^2.0.0 | Integración Laravel ↔ Vite |
+| concurrently | ^9.0.1 | Ejecutar comandos en paralelo |
 
 ---
 
 ## Dependencias PHP / Composer (composer.json)
 
-### Dependencias de producción
+### Producción
 
-- php: ^8.2
-  - Requisito de versión de PHP.
-- laravel/framework: ^12.0
-  - Framework backend (Laravel 12).
-- guzzlehttp/guzzle: ^7.8
-  - Cliente HTTP para realizar solicitudes desde backend.
-- laravel/tinker: ^2.10.1
-  - Consola REPL para interactuar con la aplicación.
+| Paquete | Versión | Descripción | Docs |
+|---|---:|---|---|
+| php | ^8.2 | Versión mínima de PHP | https://www.php.net/ |
+| laravel/framework | ^12.0 | Framework backend | https://laravel.com/docs/ |
+| guzzlehttp/guzzle | ^7.8 | Cliente HTTP para backend | https://docs.guzzlephp.org/ |
+| laravel/tinker | ^2.10.1 | Consola REPL | https://laravel.com/docs/tinker |
 
-### Dependencias de desarrollo
+### Desarrollo
 
-- fakerphp/faker: ^1.23
-  - Generador de datos de prueba.
-- nunomaduro/collision: ^8.6
-  - Mejor experiencia en la salida de errores durante testing.
-- phpunit/phpunit: ^11.5.3
-  - Framework de testing para PHP.
-- mockery/mockery: ^1.6
-  - Biblioteca para mocks en pruebas.
-- laravel/pail: ^1.2.2
-  - Herramientas adicionales de desarrollo (pint/ail?).
-- laravel/pint: ^1.24
-  - Formateador de código para PHP.
-- laravel/sail: ^1.41
-  - Entorno de desarrollo Docker (opcional).
+| Paquete | Versión | Uso |
+|---|---:|---|
+| fakerphp/faker | ^1.23 | Generador de datos de prueba |
+| nunomaduro/collision | ^8.6 | Mejor salida de errores en tests |
+| phpunit/phpunit | ^11.5.3 | Framework de testing |
+| mockery/mockery | ^1.6 | Mocks en pruebas |
+| laravel/pail | ^1.2.2 | Herramientas de desarrollo |
+| laravel/pint | ^1.24 | Formateador de código PHP |
+| laravel/sail | ^1.41 | Entorno Docker para dev |
 
 ---
 
-## Notas adicionales
+## Comandos útiles
 
-- Algunas librerías (por ejemplo `axios` y `vue`) están usadas ampliamente en múltiples componentes (`resources/js/components/`).
-- Para dependencias de npm, ejecutar `npm install` y `npm run dev` para desarrollo con Vite (o usar el script `composer dev` que orquesta procesos si está disponible).
-- Para dependencias de PHP, ejecutar `composer install`.
+```bash
+# Instalar dependencias backend
+composer install
 
-Si quieres, puedo:
-- Añadir una breve sección con comandos útiles para desarrollo y deploy.
-- Generar un archivo `README_DEV.md` con pasos de instalación y ejecución.
-- Incluir enlaces a la documentación oficial de cada librería.
+# Instalar dependencias frontend
+npm install
+
+# Levantar servidor de desarrollo (Vite) y Laravel (ejemplo simple)
+# En desarrollo se suele usar el script combinado definido en composer.json
+composer run dev
+
+# O levantar solo Vite
+npm run dev
+
+# Build para producción
+npm run build
+```
+
+## Notas y recomendaciones
+
+- `axios` y `vue` son usados extensivamente en `resources/js/components/`.
+- Las peticiones a la API usan `axios` para incluir token/headers de sesión.
+- Si quieres, puedo añadir enlaces directos a la documentación de cada paquete o generar un `README_DEV.md` con pasos de instalación detallados y tips según el entorno (Docker vs local).
+
+---
