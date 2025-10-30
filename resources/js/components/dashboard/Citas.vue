@@ -8,31 +8,89 @@
         </h2>
         <div v-if="loading" class="text-gray-500">Cargando citas...</div>
         <div v-else>
-          <div v-if="citas.length === 0" class="text-gray-500">No hay citas para este día.</div>
+          <div v-if="citasOrdenadas.length === 0" class="text-gray-500">No hay citas para este día.</div>
           <ul v-else class="space-y-4">
-            <li v-for="cita in citas" :key="cita.id" class="bg-white rounded-xl shadow-lg p-4 flex items-center justify-between border border-gray-200 hover:shadow-xl transition">
-              <div class="flex items-center gap-3">
-                <span class="flex items-center justify-center rounded-full text-white w-10 h-10 text-xl bg-[#a259ff]" title="Paciente">
-                  <font-awesome-icon icon="user" />
-                </span>
-                <div>
-                  <span class="font-semibold text-lg">{{ cita.nombre_completo }}</span>
-                  <span class="ml-2 px-2 py-1 bg-gray-100 rounded text-xs text-gray-700">{{ formatHora(cita.fecha) }}</span>
-                  <div class="text-gray-500 text-sm">Motivo: {{ cita.motivo }}</div>
+            <li v-for="cita in citasOrdenadas" :key="cita.id" class="bg-white rounded-xl shadow-lg p-4 border border-gray-200 hover:shadow-xl transition-all duration-300">
+              <div class="flex items-center justify-between gap-4">
+                <!-- Información de la cita -->
+                <div class="flex items-center gap-3 flex-1">
+                  <div class="flex items-center justify-center rounded-full text-white w-10 h-10 text-lg bg-gradient-to-br from-purple-500 to-purple-600 shadow-md" title="Paciente">
+                    <font-awesome-icon icon="user" />
+                  </div>
+                  <div class="flex-1">
+                    <div class="flex items-center gap-2 mb-1">
+                      <span class="font-semibold text-base text-gray-800">{{ cita.nombre_completo }}</span>
+                      <span class="px-2 py-1 bg-purple-100 text-purple-700 rounded-full text-xs font-semibold">
+                        {{ formatHora(cita.fecha) }}
+                      </span>
+                    </div>
+                    <div class="text-gray-600 text-sm">Motivo: {{ cita.motivo }}</div>
+                  </div>
                 </div>
-              </div>
-              <div class="flex items-center gap-2">
-                <span :class="estadoClase(cita.estado)" style="font-family: 'Montserrat', 'Arial', sans-serif; letter-spacing: 1px; font-weight: bold; font-size: 1rem;">
-                  {{ capitalize(cita.estado) }}
-                </span>
-                <template v-if="cita.estado !== 'atendida'">
-                  <button @click="abrirConfirmarAtender(cita)" class="ml-2 px-3 py-1 rounded-lg bg-green-500 text-white font-bold shadow hover:bg-green-700 transition-colors" title="Marcar como atendida">
-                    <font-awesome-icon icon="check" />
-                  </button>
-                  <button @click="abrirConfirmarEliminar(cita)" class="ml-2 px-3 py-1 rounded-lg bg-red-500 text-white font-bold shadow hover:bg-red-700 transition-colors" title="Eliminar cita">
-                    <font-awesome-icon icon="trash" /> Eliminar
-                  </button>
-                </template>
+
+                <!-- Controles según el rol -->
+                <div class="flex items-center gap-2">
+                  <!-- Para Recepcionista: Dropdown para cambiar estado (si no está atendida ni cancelada) -->
+                  <template v-if="usuarioGuardado.rol === 'recepcionista'">
+                    <div v-if="cita.estado !== 'atendida' && cita.estado !== 'cancelada'" class="flex items-center gap-2">
+                      <select 
+                        :value="cita.estado" 
+                        @change="cambiarEstadoCita(cita.id, $event.target.value)"
+                        class="estado-select"
+                        :class="estadoClaseSelect(cita.estado)"
+                      >
+                        <option value="pendiente">Pendiente</option>
+                        <option value="confirmada">Confirmada</option>
+                        <option value="cancelada">Cancelada</option>
+                        <option value="atendida">Atendida</option>
+                      </select>
+                      <button 
+                        @click="abrirConfirmarEliminar(cita)" 
+                        class="btn-eliminar"
+                        title="Eliminar cita"
+                      >
+                        <font-awesome-icon icon="trash" />
+                      </button>
+                    </div>
+                    <!-- Estado atendida - No editable -->
+                    <div v-else-if="cita.estado === 'atendida'" class="estado-badge estado-atendida">
+                      <font-awesome-icon icon="check-circle" class="mr-1" />
+                      Atendida
+                    </div>
+                    <!-- Estado cancelada - No editable -->
+                    <div v-else class="estado-badge estado-cancelada">
+                      <font-awesome-icon icon="ban" class="mr-1" />
+                      Cancelada
+                    </div>
+                  </template>
+
+                  <!-- Para Dentista: Solo mostrar estado y botón de atender -->
+                  <template v-else>
+                    <div v-if="cita.estado !== 'atendida' && cita.estado !== 'cancelada'" class="flex items-center gap-2">
+                      <div class="estado-badge" :class="estadoBadgeClase(cita.estado)">
+                        {{ capitalize(cita.estado) }}
+                      </div>
+                      <button 
+                        @click="abrirConfirmarAtender(cita)" 
+                        class="btn-atender"
+                        title="Marcar como atendida"
+                      >
+                        <font-awesome-icon icon="check" class="mr-1" />
+                        Atender
+                      </button>
+                    </div>
+                    <!-- Estado atendida -->
+                    <div v-else-if="cita.estado === 'atendida'" class="estado-badge estado-atendida">
+                      <font-awesome-icon icon="check-circle" class="mr-1" />
+                      Atendida
+                    </div>
+                    <!-- Estado cancelada -->
+                    <div v-else class="estado-badge estado-cancelada">
+                      <font-awesome-icon icon="ban" class="mr-1" />
+                      Cancelada
+                    </div>
+                  </template>
+                </div>
               </div>
             </li>
           </ul>
@@ -160,6 +218,24 @@ const citasAnteriores = computed(() => {
   }));
 });
 
+// Computed para ordenar citas: primero las no atendidas, luego por hora
+const citasOrdenadas = computed(() => {
+  if (!Array.isArray(citas.value)) return [];
+  
+  return [...citas.value].sort((a, b) => {
+    // Primero ordenar por estado: no atendidas primero
+    const estadoA = a.estado === 'atendida' || a.estado === 'cancelada' ? 1 : 0;
+    const estadoB = b.estado === 'atendida' || b.estado === 'cancelada' ? 1 : 0;
+    
+    if (estadoA !== estadoB) {
+      return estadoA - estadoB;
+    }
+    
+    // Si tienen el mismo estado, ordenar por hora
+    return new Date(a.fecha) - new Date(b.fecha);
+  });
+});
+
 function formatHora(fecha) {
   return new Date(fecha).toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' });
 }
@@ -172,30 +248,87 @@ function capitalize(str) {
 function estadoClase(estado) {
   if (estado === 'atendida') return 'text-green-600';
   if (estado === 'pendiente') return 'text-yellow-600';
+  if (estado === 'confirmada') return 'text-blue-600';
+  if (estado === 'cancelada') return 'text-red-600';
   return 'text-gray-600';
 }
 
-async function marcarCitaAtendida(id) {
-  loading.value = true;
+function estadoBadgeClase(estado) {
+  if (estado === 'pendiente') return 'estado-pendiente';
+  if (estado === 'confirmada') return 'estado-confirmada';
+  if (estado === 'cancelada') return 'estado-cancelada';
+  return 'estado-default';
+}
+
+function estadoClaseSelect(estado) {
+  if (estado === 'atendida') return 'select-atendida';
+  if (estado === 'pendiente') return 'select-pendiente';
+  if (estado === 'confirmada') return 'select-confirmada';
+  if (estado === 'cancelada') return 'select-cancelada';
+  return 'select-default';
+}
+
+async function cambiarEstadoCita(citaId, nuevoEstado) {
   try {
-    await axios.put(`/api/citas/${id}`, { estado: 'atendida' });
+    // Actualizar localmente primero (optimistic update)
+    const citaIndex = citas.value.findIndex(c => c.id === citaId);
+    if (citaIndex !== -1) {
+      citas.value[citaIndex].estado = nuevoEstado;
+    }
+    
+    // Luego actualizar en el servidor en segundo plano
+    await axios.put(`/api/citas/${citaId}`, { estado: nuevoEstado });
+    
+    // Recargar silenciosamente sin mostrar loading
+    const url = `/api/citas?fecha=${formatoFecha(fechaSeleccionada.value)}`;
+    const response = await axios.get(url);
+    citas.value = response.data || [];
+  } catch (e) {
+    console.error('Error al cambiar estado de la cita:', e);
+    alert('Error al cambiar el estado de la cita');
+    // Si falla, recargar para restaurar el estado correcto
     await fetchCitas(formatoFecha(fechaSeleccionada.value));
+  }
+}
+
+async function marcarCitaAtendida(id) {
+  try {
+    // Actualizar localmente primero
+    const citaIndex = citas.value.findIndex(c => c.id === id);
+    if (citaIndex !== -1) {
+      citas.value[citaIndex].estado = 'atendida';
+    }
+    
+    // Actualizar en servidor
+    await axios.put(`/api/citas/${id}`, { estado: 'atendida' });
+    
+    // Recargar silenciosamente
+    const url = `/api/citas?fecha=${formatoFecha(fechaSeleccionada.value)}`;
+    const response = await axios.get(url);
+    citas.value = response.data || [];
   } catch (e) {
     console.error('Error al marcar cita como atendida:', e);
-  } finally {
-    loading.value = false;
+    // Si falla, recargar
+    await fetchCitas(formatoFecha(fechaSeleccionada.value));
   }
 }
 
 async function solicitarEliminarCita(id) {
-  loading.value = true;
   try {
+    // Eliminar localmente primero para feedback inmediato
+    citas.value = citas.value.filter(c => c.id !== id);
+    
+    // Eliminar en servidor
     await axios.delete(`/api/citas/${id}`);
-    await fetchCitas(formatoFecha(fechaSeleccionada.value));
+    
+    // Recargar silenciosamente
+    const url = `/api/citas?fecha=${formatoFecha(fechaSeleccionada.value)}`;
+    const response = await axios.get(url);
+    citas.value = response.data || [];
   } catch (e) {
     console.error('Error al eliminar cita:', e);
-  } finally {
-    loading.value = false;
+    // Si falla, recargar para restaurar
+    await fetchCitas(formatoFecha(fechaSeleccionada.value));
   }
 }
 
@@ -544,5 +677,174 @@ section {
   z-index: 50;
   background: rgba(255,255,255,0.4);
   backdrop-filter: blur(6px);
+}
+
+/* ============================================
+   ESTILOS MEJORADOS PARA ESTADOS Y CONTROLES
+   ============================================ */
+
+/* Badge de estado general */
+.estado-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-weight: 600;
+  font-size: 0.875rem;
+  letter-spacing: 0.5px;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.estado-pendiente {
+  background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+  color: white;
+}
+
+.estado-confirmada {
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  color: white;
+}
+
+.estado-cancelada {
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+  color: white;
+  opacity: 0.8;
+}
+
+.estado-atendida {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: white;
+  cursor: default;
+}
+
+/* Select personalizado para estados */
+.estado-select {
+  appearance: none;
+  padding: 8px 36px 8px 16px;
+  border-radius: 20px;
+  font-weight: 600;
+  font-size: 0.875rem;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='white'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='3' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  background-size: 16px 16px;
+  min-width: 150px;
+}
+
+.estado-select:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.estado-select:focus {
+  outline: none;
+  ring: 2px;
+  ring-color: #a259ff;
+  ring-offset: 2px;
+}
+
+/* Colores del select según estado */
+.select-pendiente {
+  background-color: #f59e0b;
+  color: white;
+}
+
+.select-confirmada {
+  background-color: #3b82f6;
+  color: white;
+}
+
+.select-cancelada {
+  background-color: #ef4444;
+  color: white;
+}
+
+.select-atendida {
+  background-color: #10b981;
+  color: white;
+}
+
+.select-default {
+  background-color: #6b7280;
+  color: white;
+}
+
+/* Options del select */
+.estado-select option {
+  padding: 12px;
+  font-weight: 600;
+  background-color: white;
+  color: #374151;
+}
+
+/* Botón de eliminar */
+.btn-eliminar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+  color: white;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(239, 68, 68, 0.3);
+}
+
+.btn-eliminar:hover {
+  transform: scale(1.1) rotate(5deg);
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.5);
+}
+
+.btn-eliminar:active {
+  transform: scale(0.95);
+}
+
+/* Botón de atender (para dentista) */
+.btn-atender {
+  display: inline-flex;
+  align-items: center;
+  padding: 8px 20px;
+  border-radius: 20px;
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: white;
+  border: none;
+  font-weight: 600;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
+}
+
+.btn-atender:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.5);
+}
+
+.btn-atender:active {
+  transform: translateY(0);
+}
+
+/* Animación suave al cargar */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.space-y-4 li {
+  animation: fadeInUp 0.4s ease-out;
 }
 </style>

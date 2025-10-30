@@ -20,13 +20,14 @@ NC='\033[0m'
 mostrar_menu() {
     echo -e "${CYAN}📋 ¿Qué deseas hacer?${NC}"
     echo ""
-    echo -e "${BLUE}1.${NC} �️  Configurar MariaDB (primera vez)"
-    echo -e "${BLUE}2.${NC} �👨‍⚕️ Crear usuario (admin, doctor, recepcionista)"
+    echo -e "${BLUE}1.${NC} 🛠️  Configurar MariaDB (primera vez)"
+    echo -e "${BLUE}2.${NC} 👨‍⚕️ Crear usuario (admin, doctor, recepcionista)"
     echo -e "${BLUE}3.${NC} 👥 Crear paciente"
-    echo -e "${BLUE}4.${NC} 🎲 Crear datos de prueba completos"
-    echo -e "${BLUE}5.${NC} 📋 Listar datos existentes"
-    echo -e "${BLUE}6.${NC} 🗑️  Limpiar base de datos"
-    echo -e "${BLUE}7.${NC} 🔄 Ejecutar migraciones"
+    echo -e "${BLUE}4.${NC} 🗓️  Crear citas (múltiples en una fecha)"
+    echo -e "${BLUE}5.${NC} 🎲 Crear datos de prueba completos"
+    echo -e "${BLUE}6.${NC} 📋 Listar datos existentes"
+    echo -e "${BLUE}7.${NC} 🗑️  Limpiar base de datos"
+    echo -e "${BLUE}8.${NC} 🔄 Ejecutar migraciones"
     echo -e "${BLUE}0.${NC} 🚪 Salir"
     echo ""
 }
@@ -71,7 +72,7 @@ fi
 # Loop principal del menú
 while true; do
     mostrar_menu
-    echo -n "Selecciona una opción (0-7): "
+    echo -n "Selecciona una opción (0-8): "
     read opcion
     
     echo ""
@@ -91,19 +92,24 @@ while true; do
             php crear-paciente.php
             ;;
         4)
+            echo -e "${GREEN}🗓️  Creando citas...${NC}"
+            echo ""
+            php crear-citas.php
+            ;;
+        5)
             echo -e "${GREEN}🎲 Creando datos de prueba...${NC}"
             echo ""
             php crear-datos-prueba.php
             ;;
-        5)
+        6)
             echo -e "${GREEN}📋 Listando datos...${NC}"
             echo ""
             php listar-datos.php
             ;;
-        6)
+        7)
             limpiar_base_datos
             ;;
-        7)
+        8)
             ejecutar_migraciones
             ;;
         0)
@@ -112,7 +118,7 @@ while true; do
             exit 0
             ;;
         *)
-            echo -e "${RED}❌ Opción inválida. Selecciona 0-7.${NC}"
+            echo -e "${RED}❌ Opción inválida. Selecciona 0-8.${NC}"
             ;;
     esac
     
