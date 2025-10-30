@@ -127,8 +127,11 @@ class AuthController extends Controller
         // Guardar información del usuario en la sesión con regeneración de ID
         $this->establecerSesionUsuario($usuario, $request);
         
-        // Actualizar último acceso del usuario
-        $usuario->update(['ultimo_acceso' => now()]);
+        // Actualizar último acceso del usuario y su IP
+        $usuario->update([
+            'ultimo_acceso' => now(),
+            'ip_ultimo_acceso' => $request->ip()
+        ]);
 
         return response()->json([
             'success' => true,
