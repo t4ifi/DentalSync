@@ -133,7 +133,7 @@
 
 - **PHP 8.4+** con extensiones: `mbstring`, `openssl`, `pdo`, `mysql`
 - **Composer 2.8+**
-- **Node.js 18+** y **NPM**
+- **Laravel 12** y **NPM**
 - **MySQL/MariaDB 10.6+**
 
 ---
