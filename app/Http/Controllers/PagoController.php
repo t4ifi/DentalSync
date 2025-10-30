@@ -494,4 +494,112 @@ class PagoController extends Controller
             ], 500);
         }
     }
+
+    /**
+     * Obtener todos los pagos del consultorio para reporte total
+     */
+    public function getTodosPagos()
+    {
+        try {
+            // Obtener todos los pagos con sus relaciones
+            $pagos = Pago::with([
+                'paciente:id,nombre_completo',
+                'detallesPagos',
+                'cuotasPago'
+            ])
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+            // Calcular totales generales
+            $montoTotalTratamientos = $pagos->sum('monto_total');
+            $montoTotalPagado = $pagos->sum('monto_pagado');
+            $saldoTotalRestante = $pagos->sum('saldo_restante');
+            
+            // Contar por estado
+            $estadisticas = [
+                'total_tratamientos' => $pagos->count(),
+                'pagos_completos' => $pagos->where('estado_pago', 'pagado_completo')->count(),
+                'pagos_parciales' => $pagos->where('estado_pago', 'pagado_parcial')->count(),
+                'pagos_pendientes' => $pagos->where('estado_pago', 'pendiente')->count(),
+            ];
+
+            return response()->json([
+                'success' => true,
+                'pagos' => $pagos,
+                'totales' => [
+                    'monto_total_tratamientos' => $montoTotalTratamientos,
+                    'monto_total_pagado' => $montoTotalPagado,
+                    'saldo_total_restante' => $saldoTotalRestante,
+                ],
+                'estadisticas' => $estadisticas
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al obtener pagos totales: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Obtener pagos del último mes para reporte mensual
+     */
+    public function getPagosMensual()
+    {
+        try {
+            // Calcular fecha de hace 1 mes
+            $fechaInicio = now()->subMonth();
+            
+            // Obtener pagos registrados en el último mes
+            $pagos = Pago::with([
+                'paciente:id,nombre_completo',
+                'detallesPagos' => function($query) use ($fechaInicio) {
+                    $query->where('fecha_pago', '>=', $fechaInicio);
+                },
+                'cuotasPago'
+            ])
+            ->where('created_at', '>=', $fechaInicio)
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+            // Obtener también detalles de pago del último mes (para pagos antiguos con pagos recientes)
+            $detallesPagoMes = DetallePago::with([
+                'pago.paciente:id,nombre_completo'
+            ])
+            ->where('fecha_pago', '>=', $fechaInicio)
+            ->get();
+
+            // Calcular totales del mes
+            $montoTotalPagadoMes = $detallesPagoMes->sum('monto_parcial');
+            $cantidadPagos = $detallesPagoMes->count();
+
+            // Totales de tratamientos creados en el mes
+            $montoTotalTratamientos = $pagos->sum('monto_total');
+            $montoTotalPagado = $pagos->sum('monto_pagado');
+            $saldoTotalRestante = $pagos->sum('saldo_restante');
+
+            return response()->json([
+                'success' => true,
+                'pagos' => $pagos,
+                'detalles_pagos_mes' => $detallesPagoMes,
+                'periodo' => [
+                    'fecha_inicio' => $fechaInicio->format('Y-m-d'),
+                    'fecha_fin' => now()->format('Y-m-d')
+                ],
+                'totales' => [
+                    'monto_total_tratamientos_mes' => $montoTotalTratamientos,
+                    'monto_total_pagado_mes' => $montoTotalPagadoMes,
+                    'cantidad_pagos_mes' => $cantidadPagos,
+                    'saldo_total_restante' => $saldoTotalRestante,
+                ],
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al obtener pagos mensuales: ' . $e->getMessage()
+            ], 500);
+        }
+    }
 }

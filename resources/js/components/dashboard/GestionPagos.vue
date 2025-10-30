@@ -1,5 +1,31 @@
 <template>
   <div class="pagos-container">
+    <!-- Barra lateral de reportes (fija) -->
+    <div class="reportes-sidebar">
+      <div class="reportes-sidebar-header">
+        <i class='bx bx-bar-chart-alt-2'></i>
+        <span>Reportes</span>
+      </div>
+      <button 
+        @click="generarPDFReporteMensual"
+        class="sidebar-reporte-btn mensual"
+        :disabled="cargando"
+        title="Generar reporte mensual"
+      >
+        <i class='bx bx-calendar-event'></i>
+        <span>Mensual</span>
+      </button>
+      <button 
+        @click="generarPDFReporteTotal"
+        class="sidebar-reporte-btn total"
+        :disabled="cargando"
+        title="Generar reporte total"
+      >
+        <i class='bx bx-file-blank'></i>
+        <span>Total</span>
+      </button>
+    </div>
+
     <!-- Header -->
     <div class="header-section">
       <h2 class="title flex items-center justify-center gap-3">
@@ -1270,6 +1296,386 @@ export default {
       }
     },
     
+    // Generar PDF de reporte mensual
+    async generarPDFReporteMensual() {
+      try {
+        this.cargando = true;
+        
+        // Obtener datos del mes
+        const response = await axios.get('/api/pagos/mensual');
+        if (!response.data.success) {
+          throw new Error(response.data.message);
+        }
+        
+        const data = response.data;
+        const usuarioActual = await this.obtenerUsuarioActual();
+        
+        const doc = new jsPDF();
+        
+        // === CONFIGURACIÓN DEL DOCUMENTO ===
+        const fechaActual = new Date().toLocaleDateString('es-AR', {
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit'
+        });
+        
+        // === ENCABEZADO ===
+        doc.setFillColor(52, 152, 219); // Azul
+        doc.rect(0, 0, 210, 45, 'F');
+        
+        doc.setTextColor(255, 255, 255);
+        doc.setFontSize(24);
+        doc.setFont('helvetica', 'bold');
+        doc.text('REPORTE MENSUAL DE PAGOS', 105, 20, { align: 'center' });
+        
+        doc.setFontSize(12);
+        doc.setFont('helvetica', 'normal');
+        doc.text(`Período: ${data.periodo.fecha_inicio} al ${data.periodo.fecha_fin}`, 105, 30, { align: 'center' });
+        doc.text(`Generado el: ${fechaActual}`, 105, 38, { align: 'center' });
+        
+        // === RESUMEN FINANCIERO ===
+        doc.setTextColor(0, 0, 0);
+        doc.setFontSize(16);
+        doc.setFont('helvetica', 'bold');
+        doc.text('RESUMEN FINANCIERO DEL MES', 20, 60);
+        
+        const resumenData = [
+          ['Total Ingresado en el Mes', `$${this.formatearMonto(data.totales.monto_total_pagado_mes)}`],
+          ['Cantidad de Pagos Realizados', data.totales.cantidad_pagos_mes],
+          ['Nuevos Tratamientos Iniciados', data.pagos.length],
+          ['Monto Total en Nuevos Tratamientos', `$${this.formatearMonto(data.totales.monto_total_tratamientos_mes)}`]
+        ];
+        
+        autoTable(doc, {
+          startY: 65,
+          head: [['Concepto', 'Valor']],
+          body: resumenData,
+          theme: 'striped',
+          headStyles: {
+            fillColor: [52, 152, 219],
+            textColor: [255, 255, 255],
+            fontStyle: 'bold',
+            fontSize: 12
+          },
+          styles: {
+            fontSize: 11,
+            cellPadding: 8
+          },
+          columnStyles: {
+            0: { cellWidth: 120 },
+            1: { halign: 'right', fontStyle: 'bold', cellWidth: 50 }
+          }
+        });
+        
+        let yPosition = doc.lastAutoTable.finalY + 15;
+        
+        // === DETALLE DE PAGOS RECIBIDOS ===
+        if (data.detalles_pagos_mes && data.detalles_pagos_mes.length > 0) {
+          doc.setFontSize(14);
+          doc.setFont('helvetica', 'bold');
+          doc.text('DETALLE DE PAGOS RECIBIDOS EN EL MES', 20, yPosition);
+          
+          yPosition += 5;
+          
+          const pagosData = data.detalles_pagos_mes.map(detalle => [
+            this.formatearFecha(detalle.fecha_pago),
+            detalle.pago?.paciente?.nombre_completo || 'N/A',
+            detalle.descripcion || 'Pago',
+            `$${this.formatearMonto(detalle.monto_parcial)}`
+          ]);
+          
+          autoTable(doc, {
+            startY: yPosition,
+            head: [['Fecha', 'Paciente', 'Descripción', 'Monto']],
+            body: pagosData,
+            theme: 'striped',
+            headStyles: {
+              fillColor: [46, 204, 113],
+              textColor: [255, 255, 255],
+              fontStyle: 'bold'
+            },
+            styles: {
+              fontSize: 9,
+              cellPadding: 5
+            },
+            columnStyles: {
+              0: { cellWidth: 25 },
+              1: { cellWidth: 50 },
+              2: { cellWidth: 70 },
+              3: { cellWidth: 30, halign: 'right', fontStyle: 'bold' }
+            }
+          });
+          
+          yPosition = doc.lastAutoTable.finalY + 15;
+        }
+        
+        // === NUEVOS TRATAMIENTOS DEL MES ===
+        if (data.pagos && data.pagos.length > 0) {
+          if (yPosition > 240) {
+            doc.addPage();
+            yPosition = 20;
+          }
+          
+          doc.setFontSize(14);
+          doc.setFont('helvetica', 'bold');
+          doc.text('NUEVOS TRATAMIENTOS INICIADOS EN EL MES', 20, yPosition);
+          
+          yPosition += 5;
+          
+          const tratamientosData = data.pagos.map(pago => [
+            pago.paciente?.nombre_completo || 'N/A',
+            pago.descripcion,
+            this.obtenerTextoModalidad(pago.modalidad_pago),
+            `$${this.formatearMonto(pago.monto_total)}`,
+            `$${this.formatearMonto(pago.monto_pagado)}`,
+            this.obtenerTextoEstado(pago.estado_pago)
+          ]);
+          
+          autoTable(doc, {
+            startY: yPosition,
+            head: [['Paciente', 'Tratamiento', 'Modalidad', 'Total', 'Pagado', 'Estado']],
+            body: tratamientosData,
+            theme: 'grid',
+            headStyles: {
+              fillColor: [155, 89, 182],
+              textColor: [255, 255, 255],
+              fontStyle: 'bold'
+            },
+            styles: {
+              fontSize: 8,
+              cellPadding: 4
+            },
+            columnStyles: {
+              0: { cellWidth: 35 },
+              1: { cellWidth: 50 },
+              2: { cellWidth: 25 },
+              3: { cellWidth: 25, halign: 'right' },
+              4: { cellWidth: 25, halign: 'right' },
+              5: { cellWidth: 25, halign: 'center' }
+            }
+          });
+        }
+        
+        // === PIE DE PÁGINA ===
+        const totalPages = doc.internal.getNumberOfPages();
+        for (let i = 1; i <= totalPages; i++) {
+          doc.setPage(i);
+          
+          doc.setFontSize(8);
+          doc.setFont('helvetica', 'normal');
+          doc.setTextColor(100, 100, 100);
+          doc.text(`Reporte generado por: ${usuarioActual.nombre}`, 20, 285);
+          doc.text(`Página ${i} de ${totalPages}`, 170, 285);
+          
+          doc.setDrawColor(52, 152, 219);
+          doc.setLineWidth(0.5);
+          doc.line(20, 280, 190, 280);
+        }
+        
+        // Guardar archivo
+        const nombreArchivo = `Reporte_Mensual_${data.periodo.fecha_inicio}_${data.periodo.fecha_fin}.pdf`;
+        doc.save(nombreArchivo);
+        
+        this.mostrarMensaje('PDF de reporte mensual generado exitosamente', 'exito');
+        
+      } catch (error) {
+        console.error('Error al generar PDF mensual:', error);
+        this.mostrarMensaje('Error al generar el reporte mensual', 'error');
+      } finally {
+        this.cargando = false;
+      }
+    },
+    
+    // Generar PDF de reporte total
+    async generarPDFReporteTotal() {
+      try {
+        this.cargando = true;
+        
+        // Obtener todos los datos
+        const response = await axios.get('/api/pagos/todos');
+        if (!response.data.success) {
+          throw new Error(response.data.message);
+        }
+        
+        const data = response.data;
+        const usuarioActual = await this.obtenerUsuarioActual();
+        
+        const doc = new jsPDF();
+        
+        // === CONFIGURACIÓN DEL DOCUMENTO ===
+        const fechaActual = new Date().toLocaleDateString('es-AR', {
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit'
+        });
+        
+        // === ENCABEZADO ===
+        doc.setFillColor(231, 76, 60); // Rojo
+        doc.rect(0, 0, 210, 45, 'F');
+        
+        doc.setTextColor(255, 255, 255);
+        doc.setFontSize(24);
+        doc.setFont('helvetica', 'bold');
+        doc.text('REPORTE TOTAL DE PAGOS', 105, 20, { align: 'center' });
+        
+        doc.setFontSize(12);
+        doc.setFont('helvetica', 'normal');
+        doc.text('Consultorio DentalSync - Todos los Registros', 105, 30, { align: 'center' });
+        doc.text(`Generado el: ${fechaActual}`, 105, 38, { align: 'center' });
+        
+        // === RESUMEN FINANCIERO GLOBAL ===
+        doc.setTextColor(0, 0, 0);
+        doc.setFontSize(16);
+        doc.setFont('helvetica', 'bold');
+        doc.text('RESUMEN FINANCIERO GLOBAL', 20, 60);
+        
+        const resumenData = [
+          ['Total en Tratamientos', `$${this.formatearMonto(data.totales.monto_total_tratamientos)}`],
+          ['Total Pagado por Pacientes', `$${this.formatearMonto(data.totales.monto_total_pagado)}`],
+          ['Saldo Pendiente Total', `$${this.formatearMonto(data.totales.saldo_total_restante)}`],
+          ['Porcentaje de Recuperación', `${((data.totales.monto_total_pagado / data.totales.monto_total_tratamientos) * 100).toFixed(1)}%`]
+        ];
+        
+        autoTable(doc, {
+          startY: 65,
+          head: [['Concepto', 'Valor']],
+          body: resumenData,
+          theme: 'striped',
+          headStyles: {
+            fillColor: [231, 76, 60],
+            textColor: [255, 255, 255],
+            fontStyle: 'bold',
+            fontSize: 12
+          },
+          styles: {
+            fontSize: 11,
+            cellPadding: 8
+          },
+          columnStyles: {
+            0: { cellWidth: 120 },
+            1: { halign: 'right', fontStyle: 'bold', cellWidth: 50 }
+          }
+        });
+        
+        let yPosition = doc.lastAutoTable.finalY + 15;
+        
+        // === ESTADÍSTICAS ===
+        doc.setFontSize(14);
+        doc.setFont('helvetica', 'bold');
+        doc.text('ESTADÍSTICAS', 20, yPosition);
+        
+        yPosition += 5;
+        
+        const estadisticasData = [
+          ['Total de Tratamientos', data.estadisticas.total_tratamientos],
+          ['Pagos Completos', data.estadisticas.pagos_completos],
+          ['Pagos Parciales', data.estadisticas.pagos_parciales],
+          ['Pagos Pendientes', data.estadisticas.pagos_pendientes]
+        ];
+        
+        autoTable(doc, {
+          startY: yPosition,
+          head: [['Categoría', 'Cantidad']],
+          body: estadisticasData,
+          theme: 'striped',
+          headStyles: {
+            fillColor: [52, 152, 219],
+            textColor: [255, 255, 255],
+            fontStyle: 'bold'
+          },
+          styles: {
+            fontSize: 10,
+            cellPadding: 6
+          },
+          columnStyles: {
+            0: { cellWidth: 120 },
+            1: { halign: 'center', fontStyle: 'bold', cellWidth: 50 }
+          }
+        });
+        
+        yPosition = doc.lastAutoTable.finalY + 15;
+        
+        // === LISTADO DE TODOS LOS TRATAMIENTOS ===
+        if (data.pagos && data.pagos.length > 0) {
+          if (yPosition > 240) {
+            doc.addPage();
+            yPosition = 20;
+          }
+          
+          doc.setFontSize(14);
+          doc.setFont('helvetica', 'bold');
+          doc.text('LISTADO COMPLETO DE TRATAMIENTOS', 20, yPosition);
+          
+          yPosition += 5;
+          
+          const tratamientosData = data.pagos.map(pago => [
+            pago.paciente?.nombre_completo || 'N/A',
+            pago.descripcion.length > 30 ? pago.descripcion.substring(0, 27) + '...' : pago.descripcion,
+            `$${this.formatearMonto(pago.monto_total)}`,
+            `$${this.formatearMonto(pago.monto_pagado)}`,
+            `$${this.formatearMonto(pago.saldo_restante)}`,
+            this.obtenerTextoEstado(pago.estado_pago)
+          ]);
+          
+          autoTable(doc, {
+            startY: yPosition,
+            head: [['Paciente', 'Tratamiento', 'Total', 'Pagado', 'Saldo', 'Estado']],
+            body: tratamientosData,
+            theme: 'grid',
+            headStyles: {
+              fillColor: [46, 204, 113],
+              textColor: [255, 255, 255],
+              fontStyle: 'bold'
+            },
+            styles: {
+              fontSize: 8,
+              cellPadding: 4
+            },
+            columnStyles: {
+              0: { cellWidth: 35 },
+              1: { cellWidth: 45 },
+              2: { cellWidth: 25, halign: 'right' },
+              3: { cellWidth: 25, halign: 'right' },
+              4: { cellWidth: 25, halign: 'right' },
+              5: { cellWidth: 30, halign: 'center' }
+            }
+          });
+        }
+        
+        // === PIE DE PÁGINA ===
+        const totalPages = doc.internal.getNumberOfPages();
+        for (let i = 1; i <= totalPages; i++) {
+          doc.setPage(i);
+          
+          doc.setFontSize(8);
+          doc.setFont('helvetica', 'normal');
+          doc.setTextColor(100, 100, 100);
+          doc.text(`Reporte generado por: ${usuarioActual.nombre}`, 20, 285);
+          doc.text(`Página ${i} de ${totalPages}`, 170, 285);
+          
+          doc.setDrawColor(231, 76, 60);
+          doc.setLineWidth(0.5);
+          doc.line(20, 280, 190, 280);
+        }
+        
+        // Guardar archivo
+        const nombreArchivo = `Reporte_Total_Consultorio_${new Date().toISOString().split('T')[0]}.pdf`;
+        doc.save(nombreArchivo);
+        
+        this.mostrarMensaje('PDF de reporte total generado exitosamente', 'exito');
+        
+      } catch (error) {
+        console.error('Error al generar PDF total:', error);
+        this.mostrarMensaje('Error al generar el reporte total', 'error');
+      } finally {
+        this.cargando = false;
+      }
+    },
+    
     // Funciones para el modal de confirmación
     cerrarModalPago() {
       this.mostrarModalPago = false;
@@ -1302,6 +1708,163 @@ export default {
   padding: 20px;
   max-width: 1200px;
   margin: 0 auto;
+  position: relative;
+}
+
+/* Barra lateral de reportes fija */
+.reportes-sidebar {
+  position: fixed;
+  top: 100px;
+  right: 20px;
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+  padding: 16px;
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 140px;
+  border: 2px solid #f0f0f0;
+  transition: all 0.3s ease;
+}
+
+.reportes-sidebar:hover {
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.18);
+  border-color: #a259ff;
+}
+
+.reportes-sidebar-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding-bottom: 12px;
+  border-bottom: 2px solid #f0f0f0;
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: #2d3748;
+}
+
+.reportes-sidebar-header i {
+  font-size: 1.3rem;
+  color: #a259ff;
+}
+
+.sidebar-reporte-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 16px;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.9rem;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.sidebar-reporte-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  transition: left 0.3s ease;
+  z-index: 0;
+}
+
+.sidebar-reporte-btn i {
+  font-size: 1.4rem;
+  z-index: 1;
+  transition: transform 0.3s ease;
+}
+
+.sidebar-reporte-btn span {
+  z-index: 1;
+  transition: color 0.3s ease;
+}
+
+.sidebar-reporte-btn.mensual {
+  background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+  color: #1976d2;
+}
+
+.sidebar-reporte-btn.mensual::before {
+  background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+}
+
+.sidebar-reporte-btn.total {
+  background: linear-gradient(135deg, #ffebee 0%, #ffcdd2 100%);
+  color: #c62828;
+}
+
+.sidebar-reporte-btn.total::before {
+  background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+}
+
+.sidebar-reporte-btn:hover::before {
+  left: 0;
+}
+
+.sidebar-reporte-btn:hover {
+  transform: translateX(-4px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.sidebar-reporte-btn:hover span,
+.sidebar-reporte-btn:hover i {
+  color: white;
+}
+
+.sidebar-reporte-btn:hover i {
+  transform: scale(1.15);
+}
+
+.sidebar-reporte-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.sidebar-reporte-btn:disabled::before {
+  left: -100%;
+}
+
+/* Responsive: ocultar en móvil, mostrar botón flotante */
+@media (max-width: 768px) {
+  .reportes-sidebar {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    top: auto;
+    flex-direction: row;
+    padding: 12px;
+    min-width: auto;
+  }
+  
+  .reportes-sidebar-header {
+    display: none;
+  }
+  
+  .sidebar-reporte-btn span {
+    display: none;
+  }
+  
+  .sidebar-reporte-btn {
+    padding: 12px;
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+  }
+  
+  .sidebar-reporte-btn i {
+    font-size: 1.5rem;
+  }
 }
 
 .header-section {

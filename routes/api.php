@@ -68,6 +68,8 @@ Route::middleware(['auth.api', 'rate.limit:api'])->group(function () {
         Route::get('/resumen', [PagoController::class, 'getResumenPagos']);
         Route::get('/paciente/{pacienteId}', [PagoController::class, 'verPagosPaciente']);
         Route::get('/cuotas/{pagoId}', [PagoController::class, 'getCuotasPago']);
+        Route::get('/todos', [PagoController::class, 'getTodosPagos']);
+        Route::get('/mensual', [PagoController::class, 'getPagosMensual']);
         
         // Operaciones críticas - temporalmente sin CSRF para desarrollo
         Route::post('/init-session', [PagoController::class, 'initSession']);
