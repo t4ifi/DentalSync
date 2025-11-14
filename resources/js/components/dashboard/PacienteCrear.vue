@@ -225,6 +225,7 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue';
+import axios from 'axios';
 
 // Estados reactivos para el formulario
 const formData = ref({
@@ -341,31 +342,39 @@ const crearPaciente = async () => {
       observaciones: formData.value.observaciones || null
     };
 
-    const response = await fetch('/api/pacientes', {
-      method: 'POST',
-      headers: { 
-        'Content-Type': 'application/json',
-        'Accept': 'application/json'
-      },
-      body: JSON.stringify(datosEnvio)
-    });
+    try {
+      // Usamos axios (bootstrap.js ya setea withCredentials = true)
+      const res = await axios.post('/api/pacientes', datosEnvio, {
+        headers: { 'Accept': 'application/json' }
+      });
 
-    const data = await response.json();
+      const data = res.data || {};
 
-    if (!response.ok) {
-      if (response.status === 422 && data.details) {
-        // Errores de validación del backend
-        errors.value = data.details;
+      // Éxito - mostrar modal
+      pacienteCreado.value = data.paciente || data.data || null;
+      mostrarModal.value = true;
+      mensajeExito.value = data.message || 'Paciente registrado exitosamente';
+    } catch (err) {
+      // Manejo de errores de axios
+      if (err.response) {
+        const status = err.response.status;
+        const body = err.response.data || {};
+
+        if (status === 401) {
+          errors.value = { general: 'Autenticación requerida para acceder a este recurso' };
+          return;
+        }
+
+        if (status === 422) {
+          errors.value = body.details || body.errors || { general: 'Errores de validación' };
+          return;
+        }
+
+        errors.value = { general: body.message || 'Error del servidor' };
       } else {
-        throw new Error(data.message || 'Error al crear paciente');
+        errors.value = { general: err.message || 'No se pudo crear el paciente' };
       }
-      return;
     }
-
-    // Éxito - mostrar modal
-    pacienteCreado.value = data.paciente;
-    mostrarModal.value = true;
-    mensajeExito.value = data.message;
 
   } catch (error) {
     console.error('Error al crear paciente:', error);
